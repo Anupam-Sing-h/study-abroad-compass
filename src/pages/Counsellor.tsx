@@ -1,0 +1,143 @@
+import { useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import DashboardLayout from '@/components/dashboard/DashboardLayout';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card } from '@/components/ui/card';
+import { Send, Loader2, Bot, User } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export default function Counsellor() {
+  const { user, profile, studentProfile, loading: authLoading } = useAuth();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (!authLoading && !user) navigate('/login');
+    if (!authLoading && profile && !profile.onboarding_completed) navigate('/onboarding');
+  }, [user, profile, authLoading, navigate]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  useEffect(() => {
+    if (messages.length === 0 && profile) {
+      setMessages([{
+        role: 'assistant',
+        content: `Hi ${profile.full_name?.split(' ')[0] || 'there'}! 👋 I'm your AI Counsellor. I've reviewed your profile and I'm ready to help you navigate your study-abroad journey. How can I assist you today?\n\nYou can ask me to:\n• Analyze your profile strengths and gaps\n• Recommend universities that match your profile\n• Explain why certain universities fit you\n• Add universities to your shortlist\n• Create tasks for your to-do list`
+      }]);
+    }
+  }, [profile, messages.length]);
+
+  const sendMessage = async () => {
+    if (!input.trim() || !user || !studentProfile) return;
+
+    const userMessage = input.trim();
+    setInput('');
+    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+    setIsLoading(true);
+
+    try {
+      const response = await supabase.functions.invoke('ai-counsellor', {
+        body: { 
+          message: userMessage,
+          studentProfile,
+          profile
+        }
+      });
+
+      if (response.error) throw response.error;
+      
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: response.data.reply || "I'm sorry, I couldn't process that request." 
+      }]);
+    } catch (error: any) {
+      console.error('AI error:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: error.message || 'Failed to get response from AI Counsellor'
+      });
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: "I'm sorry, I encountered an error. Please try again." 
+      }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (authLoading) {
+    return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+  }
+
+  return (
+    <DashboardLayout>
+      <div className="h-[calc(100vh-8rem)] flex flex-col">
+        <h1 className="text-2xl font-bold mb-4">AI Counsellor</h1>
+        
+        <Card className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {messages.map((msg, i) => (
+              <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
+                {msg.role === 'assistant' && (
+                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                    <Bot className="h-4 w-4 text-primary-foreground" />
+                  </div>
+                )}
+                <div className={`max-w-[80%] rounded-lg p-3 whitespace-pre-wrap ${
+                  msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                }`}>
+                  {msg.content}
+                </div>
+                {msg.role === 'user' && (
+                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                    <User className="h-4 w-4" />
+                  </div>
+                )}
+              </div>
+            ))}
+            {isLoading && (
+              <div className="flex gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                  <Bot className="h-4 w-4 text-primary-foreground" />
+                </div>
+                <div className="bg-muted rounded-lg p-3">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          <div className="p-4 border-t">
+            <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="flex gap-2">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Ask about universities, your profile, or next steps..."
+                disabled={isLoading}
+              />
+              <Button type="submit" disabled={!input.trim() || isLoading}>
+                <Send className="h-4 w-4" />
+              </Button>
+            </form>
+          </div>
+        </Card>
+      </div>
+    </DashboardLayout>
+  );
+}
