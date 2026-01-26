@@ -1,19 +1,22 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import UniversityCard from '@/components/universities/UniversityCard';
 import UniversityFilters from '@/components/universities/UniversityFilters';
+import UniversityDetailModal from '@/components/universities/UniversityDetailModal';
 import { useUniversities } from '@/hooks/useUniversities';
+import { University } from '@/lib/types';
 import { Loader2, Search, Building2, Heart } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { useState } from 'react';
 
 export default function Universities() {
   const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedUniversity, setSelectedUniversity] = useState<University | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const {
     universities,
@@ -54,6 +57,11 @@ export default function Universities() {
       uni.programs?.some((p) => p.toLowerCase().includes(query))
     );
   });
+
+  const handleCardClick = (university: University) => {
+    setSelectedUniversity(university);
+    setIsModalOpen(true);
+  };
 
   return (
     <DashboardLayout>
@@ -126,6 +134,7 @@ export default function Universities() {
                   university={university}
                   shortlistEntry={getShortlistEntry(university.id)}
                   onShortlist={addToShortlist}
+                  onClick={() => handleCardClick(university)}
                   onRemoveShortlist={removeFromShortlist}
                   isShortlisting={isShortlisting}
                 />
@@ -134,6 +143,17 @@ export default function Universities() {
           )}
         </div>
       </div>
+
+      {/* University Detail Modal */}
+      <UniversityDetailModal
+        university={selectedUniversity}
+        shortlistEntry={selectedUniversity ? getShortlistEntry(selectedUniversity.id) : undefined}
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        onShortlist={addToShortlist}
+        onRemoveShortlist={removeFromShortlist}
+        isShortlisting={isShortlisting}
+      />
     </DashboardLayout>
   );
 }

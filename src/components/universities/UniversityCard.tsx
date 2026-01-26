@@ -20,6 +20,7 @@ interface UniversityCardProps {
   onShortlist: (universityId: string) => void;
   onRemoveShortlist: (universityId: string) => void;
   isShortlisting?: boolean;
+  onClick?: () => void;
 }
 
 export default function UniversityCard({ 
@@ -27,7 +28,8 @@ export default function UniversityCard({
   shortlistEntry, 
   onShortlist, 
   onRemoveShortlist,
-  isShortlisting 
+  isShortlisting,
+  onClick
 }: UniversityCardProps) {
   const isShortlisted = !!shortlistEntry;
 
@@ -48,7 +50,10 @@ export default function UniversityCard({
   };
 
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300 border-border/50 hover:border-primary/30 overflow-hidden">
+    <Card 
+      className="group hover:shadow-lg transition-all duration-300 border-border/50 hover:border-primary/30 overflow-hidden cursor-pointer"
+      onClick={onClick}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
@@ -82,7 +87,10 @@ export default function UniversityCard({
                 ? 'text-red-500 hover:text-red-600 hover:bg-red-50' 
                 : 'text-muted-foreground hover:text-primary hover:bg-primary/10'
             )}
-            onClick={() => isShortlisted ? onRemoveShortlist(university.id) : onShortlist(university.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              isShortlisted ? onRemoveShortlist(university.id) : onShortlist(university.id);
+            }}
             disabled={isShortlisting}
           >
             {isShortlisted ? <Heart className="h-5 w-5 fill-current" /> : <Heart className="h-5 w-5" />}
@@ -158,7 +166,10 @@ export default function UniversityCard({
             variant={isShortlisted ? "secondary" : "default"} 
             size="sm" 
             className="flex-1"
-            onClick={() => isShortlisted ? onRemoveShortlist(university.id) : onShortlist(university.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              isShortlisted ? onRemoveShortlist(university.id) : onShortlist(university.id);
+            }}
             disabled={isShortlisting}
           >
             {isShortlisted ? (
