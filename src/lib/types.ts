@@ -68,14 +68,14 @@ export interface UserShortlist {
   id: string;
   user_id: string;
   university_id: string;
-  category: 'dream' | 'target' | 'safe' | null;
+  category: string | null;
   fit_score: number | null;
   fit_reasons: string[] | null;
   risk_reasons: string[] | null;
-  is_locked: boolean;
+  is_locked: boolean | null;
   locked_at: string | null;
-  created_at: string;
-  updated_at: string;
+  created_at: string | null;
+  updated_at: string | null;
   university?: University;
 }
 
