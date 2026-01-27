@@ -7,7 +7,7 @@ import UniversityFilters from '@/components/universities/UniversityFilters';
 import UniversityDetailModal from '@/components/universities/UniversityDetailModal';
 import { useUniversities } from '@/hooks/useUniversities';
 import { University } from '@/lib/types';
-import { Loader2, Search, Building2, Heart } from 'lucide-react';
+import { Loader2, Search, Building2, Heart, Lock } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 
@@ -23,6 +23,7 @@ export default function Universities() {
     allUniversities,
     loading,
     isShortlisting,
+    isAnalyzing,
     filters,
     setFilters,
     availableCountries,
@@ -31,6 +32,9 @@ export default function Universities() {
     removeFromShortlist,
     getShortlistEntry,
     shortlistCount,
+    lockedCount,
+    toggleLock,
+    runFitAnalysis,
   } = useUniversities();
 
   useEffect(() => {
@@ -40,7 +44,7 @@ export default function Universities() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -69,7 +73,7 @@ export default function Universities() {
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
+            <h1 className="text-2xl font-bold flex items-center gap-2 text-foreground">
               <Building2 className="h-7 w-7 text-primary" />
               Explore Universities
             </h1>
@@ -81,6 +85,10 @@ export default function Universities() {
             <Badge variant="secondary" className="gap-1.5 py-1.5 px-3">
               <Heart className="h-3.5 w-3.5 fill-primary text-primary" />
               {shortlistCount} shortlisted
+            </Badge>
+            <Badge variant="default" className="gap-1.5 py-1.5 px-3">
+              <Lock className="h-3.5 w-3.5" />
+              {lockedCount} locked
             </Badge>
           </div>
         </div>
@@ -121,7 +129,7 @@ export default function Universities() {
           {displayedUniversities.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <Building2 className="h-12 w-12 text-muted-foreground/50 mb-4" />
-              <h3 className="font-semibold text-lg">No universities found</h3>
+              <h3 className="font-semibold text-lg text-foreground">No universities found</h3>
               <p className="text-muted-foreground mt-1 max-w-sm">
                 Try adjusting your filters or search query to find universities.
               </p>
@@ -137,6 +145,7 @@ export default function Universities() {
                   onClick={() => handleCardClick(university)}
                   onRemoveShortlist={removeFromShortlist}
                   isShortlisting={isShortlisting}
+                  isAnalyzing={isAnalyzing}
                 />
               ))}
             </div>
@@ -152,7 +161,10 @@ export default function Universities() {
         onOpenChange={setIsModalOpen}
         onShortlist={addToShortlist}
         onRemoveShortlist={removeFromShortlist}
+        onToggleLock={toggleLock}
+        onRunAnalysis={runFitAnalysis}
         isShortlisting={isShortlisting}
+        isAnalyzing={isAnalyzing}
       />
     </DashboardLayout>
   );

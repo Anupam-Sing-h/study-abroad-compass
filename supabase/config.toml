@@ -1,1 +1,7 @@
 project_id = "nkuzofqbhavfiyrwjped"
+
+[functions.ai-counsellor]
+verify_jwt = false
+
+[functions.fit-analysis]
+verify_jwt = false

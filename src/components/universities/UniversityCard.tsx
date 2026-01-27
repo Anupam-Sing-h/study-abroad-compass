@@ -10,7 +10,10 @@ import {
   Heart,
   HeartOff,
   ExternalLink,
-  GraduationCap
+  GraduationCap,
+  Lock,
+  Loader2,
+  Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -20,6 +23,7 @@ interface UniversityCardProps {
   onShortlist: (universityId: string) => void;
   onRemoveShortlist: (universityId: string) => void;
   isShortlisting?: boolean;
+  isAnalyzing?: string | null;
   onClick?: () => void;
 }
 
@@ -29,9 +33,14 @@ export default function UniversityCard({
   onShortlist, 
   onRemoveShortlist,
   isShortlisting,
+  isAnalyzing,
   onClick
 }: UniversityCardProps) {
   const isShortlisted = !!shortlistEntry;
+  const isLocked = shortlistEntry?.is_locked;
+  const fitScore = shortlistEntry?.fit_score;
+  const category = shortlistEntry?.category;
+  const isCurrentlyAnalyzing = isAnalyzing === university.id;
 
   const formatTuition = (min?: number | null, max?: number | null) => {
     if (!min && !max) return 'Contact for info';
@@ -51,26 +60,56 @@ export default function UniversityCard({
 
   return (
     <Card 
-      className="group hover:shadow-lg transition-all duration-300 border-border/50 hover:border-primary/30 overflow-hidden cursor-pointer"
+      className={cn(
+        "group hover:shadow-lg transition-all duration-300 border-border/50 hover:border-primary/30 overflow-hidden cursor-pointer",
+        isLocked && "ring-2 ring-primary"
+      )}
       onClick={onClick}
     >
+      {/* Analyzing Overlay */}
+      {isCurrentlyAnalyzing && (
+        <div className="absolute inset-0 bg-background/80 flex items-center justify-center z-10 rounded-lg">
+          <div className="flex items-center gap-2 text-primary">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span className="text-sm font-medium">Analyzing fit...</span>
+          </div>
+        </div>
+      )}
+      
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              {isLocked && (
+                <Badge className="bg-primary text-primary-foreground shrink-0">
+                  <Lock className="h-3 w-3 mr-1" />
+                  Locked
+                </Badge>
+              )}
               {university.ranking && (
                 <Badge variant="secondary" className="shrink-0">
                   <Trophy className="h-3 w-3 mr-1" />
                   #{university.ranking}
                 </Badge>
               )}
-              {shortlistEntry?.category && (
-                <Badge className={cn('capitalize', getCategoryColor(shortlistEntry.category))}>
-                  {shortlistEntry.category}
+              {category && (
+                <Badge className={cn('capitalize', getCategoryColor(category))}>
+                  {category}
+                </Badge>
+              )}
+              {fitScore !== null && fitScore !== undefined && (
+                <Badge className={cn(
+                  'shrink-0',
+                  fitScore >= 75 ? "bg-success text-success-foreground" :
+                  fitScore >= 50 ? "bg-warning text-warning-foreground" :
+                  "bg-destructive text-destructive-foreground"
+                )}>
+                  <Sparkles className="h-3 w-3 mr-1" />
+                  {fitScore}%
                 </Badge>
               )}
             </div>
-            <h3 className="font-semibold text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+            <h3 className="font-semibold text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors text-foreground">
               {university.name}
             </h3>
             <div className="flex items-center gap-1 text-muted-foreground text-sm mt-1">

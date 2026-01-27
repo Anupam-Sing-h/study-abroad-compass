@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { University, UserShortlist } from '@/lib/types';
@@ -6,11 +6,12 @@ import { FilterState } from '@/components/universities/UniversityFilters';
 import { toast } from 'sonner';
 
 export function useUniversities() {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const [universities, setUniversities] = useState<University[]>([]);
   const [shortlist, setShortlist] = useState<UserShortlist[]>([]);
   const [loading, setLoading] = useState(true);
   const [isShortlisting, setIsShortlisting] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterState>({
     countries: [],
     budgetRange: [0, 100000],
@@ -39,24 +40,24 @@ export function useUniversities() {
   }, []);
 
   // Fetch user shortlist
-  useEffect(() => {
+  const fetchShortlist = useCallback(async () => {
     if (!user) return;
 
-    const fetchShortlist = async () => {
-      const { data, error } = await supabase
-        .from('user_shortlist')
-        .select('*')
-        .eq('user_id', user.id);
+    const { data, error } = await supabase
+      .from('user_shortlist')
+      .select('*')
+      .eq('user_id', user.id);
 
-      if (error) {
-        console.error('Error fetching shortlist:', error);
-      } else {
-        setShortlist(data || []);
-      }
-    };
-
-    fetchShortlist();
+    if (error) {
+      console.error('Error fetching shortlist:', error);
+    } else {
+      setShortlist(data || []);
+    }
   }, [user]);
+
+  useEffect(() => {
+    fetchShortlist();
+  }, [fetchShortlist]);
 
   // Get unique filter options
   const availableCountries = useMemo(() => {
@@ -70,24 +71,20 @@ export function useUniversities() {
   // Filter universities
   const filteredUniversities = useMemo(() => {
     return universities.filter((uni) => {
-      // Country filter
       if (filters.countries.length > 0 && !filters.countries.includes(uni.country)) {
         return false;
       }
 
-      // Budget filter
       const tuitionMin = uni.tuition_min || 0;
       const tuitionMax = uni.tuition_max || 100000;
       if (tuitionMin > filters.budgetRange[1] || tuitionMax < filters.budgetRange[0]) {
         return false;
       }
 
-      // Program type filter
       if (filters.programTypes.length > 0 && uni.program_type && !filters.programTypes.includes(uni.program_type)) {
         return false;
       }
 
-      // Shortlist filter
       if (filters.showShortlistedOnly) {
         const isShortlisted = shortlist.some((s) => s.university_id === uni.id);
         if (!isShortlisted) return false;
@@ -97,7 +94,51 @@ export function useUniversities() {
     });
   }, [universities, filters, shortlist]);
 
-  // Shortlist management
+  // Run AI fit analysis
+  const runFitAnalysis = async (universityId: string) => {
+    if (!user || !session) return;
+    
+    setIsAnalyzing(universityId);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fit-analysis`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ universityId }),
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to analyze fit');
+      }
+
+      const analysis = await response.json();
+      
+      // Update local shortlist with analysis
+      setShortlist((prev) =>
+        prev.map((s) =>
+          s.university_id === universityId
+            ? { ...s, ...analysis }
+            : s
+        )
+      );
+
+      toast.success('Fit analysis complete!');
+      return analysis;
+    } catch (error) {
+      console.error('Error running fit analysis:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to analyze fit');
+    } finally {
+      setIsAnalyzing(null);
+    }
+  };
+
+  // Add to shortlist with AI analysis
   const addToShortlist = async (universityId: string) => {
     if (!user) {
       toast.error('Please sign in to shortlist universities');
@@ -119,6 +160,9 @@ export function useUniversities() {
 
       setShortlist((prev) => [...prev, data as UserShortlist]);
       toast.success('University added to shortlist');
+
+      // Trigger AI fit analysis in background
+      runFitAnalysis(universityId);
     } catch (error) {
       console.error('Error adding to shortlist:', error);
       toast.error('Failed to add to shortlist');
@@ -129,6 +173,12 @@ export function useUniversities() {
 
   const removeFromShortlist = async (universityId: string) => {
     if (!user) return;
+
+    const entry = shortlist.find(s => s.university_id === universityId);
+    if (entry?.is_locked) {
+      toast.error('Cannot remove a locked university. Unlock it first.');
+      return;
+    }
 
     setIsShortlisting(true);
     try {
@@ -150,9 +200,49 @@ export function useUniversities() {
     }
   };
 
+  // Lock/unlock university
+  const toggleLock = async (universityId: string) => {
+    if (!user) return;
+
+    const entry = shortlist.find(s => s.university_id === universityId);
+    if (!entry) return;
+
+    const newLockedState = !entry.is_locked;
+    
+    try {
+      const { error } = await supabase
+        .from('user_shortlist')
+        .update({
+          is_locked: newLockedState,
+          locked_at: newLockedState ? new Date().toISOString() : null,
+        })
+        .eq('user_id', user.id)
+        .eq('university_id', universityId);
+
+      if (error) throw error;
+
+      setShortlist((prev) =>
+        prev.map((s) =>
+          s.university_id === universityId
+            ? { ...s, is_locked: newLockedState, locked_at: newLockedState ? new Date().toISOString() : null }
+            : s
+        )
+      );
+
+      toast.success(newLockedState ? 'University locked! Ready for application.' : 'University unlocked');
+    } catch (error) {
+      console.error('Error toggling lock:', error);
+      toast.error('Failed to update lock status');
+    }
+  };
+
   const getShortlistEntry = (universityId: string) => {
     return shortlist.find((s) => s.university_id === universityId);
   };
+
+  const lockedCount = useMemo(() => {
+    return shortlist.filter(s => s.is_locked).length;
+  }, [shortlist]);
 
   return {
     universities: filteredUniversities,
@@ -160,6 +250,7 @@ export function useUniversities() {
     shortlist,
     loading,
     isShortlisting,
+    isAnalyzing,
     filters,
     setFilters,
     availableCountries,
@@ -168,5 +259,9 @@ export function useUniversities() {
     removeFromShortlist,
     getShortlistEntry,
     shortlistCount: shortlist.length,
+    lockedCount,
+    toggleLock,
+    runFitAnalysis,
+    refreshShortlist: fetchShortlist,
   };
 }
