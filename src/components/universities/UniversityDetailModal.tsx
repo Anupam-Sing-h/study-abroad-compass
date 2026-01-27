@@ -24,6 +24,10 @@ import {
   CheckCircle2,
   Clock,
   FileText,
+  Lock,
+  LockOpen,
+  Sparkles,
+  Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -34,7 +38,10 @@ interface UniversityDetailModalProps {
   onOpenChange: (open: boolean) => void;
   onShortlist: (universityId: string) => void;
   onRemoveShortlist: (universityId: string) => void;
+  onToggleLock?: (universityId: string) => void;
+  onRunAnalysis?: (universityId: string) => void;
   isShortlisting?: boolean;
+  isAnalyzing?: string | null;
 }
 
 export default function UniversityDetailModal({
@@ -44,11 +51,16 @@ export default function UniversityDetailModal({
   onOpenChange,
   onShortlist,
   onRemoveShortlist,
+  onToggleLock,
+  onRunAnalysis,
   isShortlisting,
+  isAnalyzing,
 }: UniversityDetailModalProps) {
   if (!university) return null;
 
   const isShortlisted = !!shortlistEntry;
+  const isLocked = shortlistEntry?.is_locked;
+  const isCurrentlyAnalyzing = isAnalyzing === university.id;
 
   const formatTuition = (min?: number | null, max?: number | null) => {
     if (!min && !max) return 'Contact for info';
@@ -296,9 +308,30 @@ export default function UniversityDetailModal({
               {!shortlistEntry.fit_score &&
                 (!shortlistEntry.fit_reasons || shortlistEntry.fit_reasons.length === 0) &&
                 (!shortlistEntry.risk_reasons || shortlistEntry.risk_reasons.length === 0) && (
-                  <p className="text-sm text-muted-foreground">
-                    Fit analysis will be available after the AI counsellor reviews your profile.
-                  </p>
+                  <div className="text-center py-4">
+                    {isCurrentlyAnalyzing ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                        <span className="text-sm text-muted-foreground">Analyzing your profile match...</span>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Fit analysis not yet complete for this university.
+                        </p>
+                        {onRunAnalysis && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => onRunAnalysis(university.id)}
+                          >
+                            <Sparkles className="h-4 w-4 mr-2" />
+                            Run Analysis
+                          </Button>
+                        )}
+                      </>
+                    )}
+                  </div>
                 )}
             </div>
           </div>
@@ -307,7 +340,27 @@ export default function UniversityDetailModal({
         <Separator className="my-4" />
 
         {/* Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {isShortlisted && onToggleLock && (
+            <Button
+              variant={isLocked ? 'secondary' : 'default'}
+              onClick={() => onToggleLock(university.id)}
+              className="gap-2"
+            >
+              {isLocked ? (
+                <>
+                  <LockOpen className="h-4 w-4" />
+                  Unlock
+                </>
+              ) : (
+                <>
+                  <Lock className="h-4 w-4" />
+                  Lock for Application
+                </>
+              )}
+            </Button>
+          )}
+          
           {university.website_url && (
             <Button variant="outline" className="flex-1" asChild>
               <a href={university.website_url} target="_blank" rel="noopener noreferrer">
@@ -320,12 +373,12 @@ export default function UniversityDetailModal({
             variant={isShortlisted ? 'secondary' : 'default'}
             className="flex-1"
             onClick={() => (isShortlisted ? onRemoveShortlist(university.id) : onShortlist(university.id))}
-            disabled={isShortlisting}
+            disabled={isShortlisting || isLocked}
           >
             {isShortlisted ? (
               <>
                 <HeartOff className="h-4 w-4 mr-2" />
-                Remove from Shortlist
+                {isLocked ? 'Locked' : 'Remove'}
               </>
             ) : (
               <>
