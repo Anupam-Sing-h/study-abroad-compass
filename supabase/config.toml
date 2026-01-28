@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.fit-analysis]
 verify_jwt = false
+
+[functions.suggest-tasks]
+verify_jwt = false
