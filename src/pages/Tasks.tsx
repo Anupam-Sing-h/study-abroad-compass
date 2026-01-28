@@ -12,11 +12,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Plus, ListTodo, CheckCircle2, AlertCircle, Clock, Trash2, Filter, Calendar } from 'lucide-react';
-import { format } from 'date-fns';
+import { Loader2, Plus, ListTodo, CheckCircle2, AlertCircle, Clock, Trash2, Filter, Calendar, Sparkles, Wand2 } from 'lucide-react';
+import { format, addDays } from 'date-fns';
+import { toast } from 'sonner';
+
+interface SuggestedTask {
+  title: string;
+  description: string;
+  category: string;
+  priority: string;
+  due_days: number;
+}
 
 export default function Tasks() {
-  const { user, profile, loading: authLoading } = useAuth();
+  const { user, profile, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { 
     tasks, 
@@ -27,10 +36,15 @@ export default function Tasks() {
     createTask, 
     deleteTask,
     stats, 
-    categories 
+    categories,
+    refreshTasks
   } = useTasks();
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showSuggestionsDialog, setShowSuggestionsDialog] = useState(false);
+  const [suggestedTasks, setSuggestedTasks] = useState<SuggestedTask[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isAddingSuggestion, setIsAddingSuggestion] = useState<number | null>(null);
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
@@ -43,6 +57,78 @@ export default function Tasks() {
     if (!authLoading && !user) navigate('/login');
     if (!authLoading && profile && !profile.onboarding_completed) navigate('/onboarding');
   }, [user, profile, authLoading, navigate]);
+
+  const handleGenerateSuggestions = async () => {
+    if (!session) return;
+    
+    setIsGenerating(true);
+    setShowSuggestionsDialog(true);
+    setSuggestedTasks([]);
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/suggest-tasks`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to generate suggestions');
+      }
+
+      const data = await response.json();
+      setSuggestedTasks(data.tasks || []);
+    } catch (error) {
+      console.error('Error generating suggestions:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to generate task suggestions');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleAddSuggestedTask = async (task: SuggestedTask, index: number) => {
+    setIsAddingSuggestion(index);
+    
+    const dueDate = addDays(new Date(), task.due_days);
+    
+    await createTask({
+      title: task.title,
+      description: task.description,
+      category: task.category,
+      priority: task.priority,
+      due_date: format(dueDate, 'yyyy-MM-dd'),
+    });
+
+    // Remove from suggestions
+    setSuggestedTasks(prev => prev.filter((_, i) => i !== index));
+    setIsAddingSuggestion(null);
+  };
+
+  const handleAddAllSuggestions = async () => {
+    setIsGenerating(true);
+    
+    for (const task of suggestedTasks) {
+      const dueDate = addDays(new Date(), task.due_days);
+      await createTask({
+        title: task.title,
+        description: task.description,
+        category: task.category,
+        priority: task.priority,
+        due_date: format(dueDate, 'yyyy-MM-dd'),
+      });
+    }
+
+    setSuggestedTasks([]);
+    setShowSuggestionsDialog(false);
+    setIsGenerating(false);
+    toast.success('All tasks added successfully!');
+  };
 
   if (authLoading || loading) {
     return (
@@ -90,75 +176,172 @@ export default function Tasks() {
               Track your study abroad preparation tasks
             </p>
           </div>
-          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-            <DialogTrigger asChild>
-              <Button className="gap-2">
-                <Plus className="h-4 w-4" />
-                New Task
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New Task</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 pt-4">
-                <div>
-                  <Label htmlFor="title">Title</Label>
-                  <Input
-                    id="title"
-                    value={newTask.title}
-                    onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                    placeholder="e.g., Complete IELTS registration"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="description">Description (optional)</Label>
-                  <Textarea
-                    id="description"
-                    value={newTask.description}
-                    onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                    placeholder="Add more details..."
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              className="gap-2"
+              onClick={handleGenerateSuggestions}
+            >
+              <Wand2 className="h-4 w-4" />
+              AI Suggestions
+            </Button>
+            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+              <DialogTrigger asChild>
+                <Button className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  New Task
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create New Task</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 pt-4">
                   <div>
-                    <Label htmlFor="priority">Priority</Label>
-                    <Select
-                      value={newTask.priority}
-                      onValueChange={(value) => setNewTask({ ...newTask, priority: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">Low</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="category">Category</Label>
+                    <Label htmlFor="title">Title</Label>
                     <Input
-                      id="category"
-                      value={newTask.category}
-                      onChange={(e) => setNewTask({ ...newTask, category: e.target.value })}
-                      placeholder="e.g., exams, documents"
+                      id="title"
+                      value={newTask.title}
+                      onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                      placeholder="e.g., Complete IELTS registration"
                     />
                   </div>
+                  <div>
+                    <Label htmlFor="description">Description (optional)</Label>
+                    <Textarea
+                      id="description"
+                      value={newTask.description}
+                      onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                      placeholder="Add more details..."
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="priority">Priority</Label>
+                      <Select
+                        value={newTask.priority}
+                        onValueChange={(value) => setNewTask({ ...newTask, priority: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="low">Low</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="high">High</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="category">Category</Label>
+                      <Input
+                        id="category"
+                        value={newTask.category}
+                        onChange={(e) => setNewTask({ ...newTask, category: e.target.value })}
+                        placeholder="e.g., exams, documents"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="due_date">Due Date (optional)</Label>
+                    <Input
+                      id="due_date"
+                      type="date"
+                      value={newTask.due_date}
+                      onChange={(e) => setNewTask({ ...newTask, due_date: e.target.value })}
+                    />
+                  </div>
+                  <Button onClick={handleCreateTask} className="w-full">
+                    Create Task
+                  </Button>
                 </div>
-                <div>
-                  <Label htmlFor="due_date">Due Date (optional)</Label>
-                  <Input
-                    id="due_date"
-                    type="date"
-                    value={newTask.due_date}
-                    onChange={(e) => setNewTask({ ...newTask, due_date: e.target.value })}
-                  />
-                </div>
-                <Button onClick={handleCreateTask} className="w-full">
-                  Create Task
-                </Button>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {/* AI Suggestions Dialog */}
+          <Dialog open={showSuggestionsDialog} onOpenChange={setShowSuggestionsDialog}>
+            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-accent" />
+                  AI-Generated Task Suggestions
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 pt-4">
+                {isGenerating ? (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+                    <p className="text-muted-foreground">Analyzing your profile and generating personalized tasks...</p>
+                  </div>
+                ) : suggestedTasks.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No new suggestions at this time. Your profile is well-covered!</p>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-sm text-muted-foreground">
+                      Based on your profile, here are {suggestedTasks.length} recommended tasks:
+                    </p>
+                    <div className="space-y-3">
+                      {suggestedTasks.map((task, index) => (
+                        <div
+                          key={index}
+                          className="p-4 border rounded-lg bg-card hover:border-primary/50 transition-colors"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <p className="font-medium text-foreground">{task.title}</p>
+                                <Badge className={getPriorityColor(task.priority)} variant="secondary">
+                                  {task.priority}
+                                </Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground">{task.description}</p>
+                              <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                                <span className="bg-secondary px-2 py-0.5 rounded">{task.category}</span>
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="h-3 w-3" />
+                                  Due in {task.due_days} days
+                                </span>
+                              </div>
+                            </div>
+                            <Button
+                              size="sm"
+                              onClick={() => handleAddSuggestedTask(task, index)}
+                              disabled={isAddingSuggestion === index}
+                            >
+                              {isAddingSuggestion === index ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <>
+                                  <Plus className="h-4 w-4 mr-1" />
+                                  Add
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {suggestedTasks.length > 0 && (
+                      <Button 
+                        onClick={handleAddAllSuggestions} 
+                        className="w-full gap-2"
+                        disabled={isGenerating}
+                      >
+                        {isGenerating ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <>
+                            <Sparkles className="h-4 w-4" />
+                            Add All {suggestedTasks.length} Tasks
+                          </>
+                        )}
+                      </Button>
+                    )}
+                  </>
+                )}
               </div>
             </DialogContent>
           </Dialog>

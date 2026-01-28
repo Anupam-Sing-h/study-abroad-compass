@@ -6,7 +6,7 @@ import { FilterState } from '@/components/universities/UniversityFilters';
 import { toast } from 'sonner';
 
 export function useUniversities() {
-  const { user, session } = useAuth();
+  const { user, session, refreshProfile } = useAuth();
   const [universities, setUniversities] = useState<University[]>([]);
   const [shortlist, setShortlist] = useState<UserShortlist[]>([]);
   const [loading, setLoading] = useState(true);
@@ -200,6 +200,31 @@ export function useUniversities() {
     }
   };
 
+  // Check and update stage progression
+  const checkStageProgression = async () => {
+    if (!user) return;
+
+    // Count locked universities after update
+    const lockedAfterUpdate = shortlist.filter(s => s.is_locked).length;
+    
+    // If user has locked at least one university, advance to Stage 4
+    if (lockedAfterUpdate >= 1) {
+      try {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ current_stage: 4 })
+          .eq('id', user.id);
+
+        if (error) throw error;
+        
+        await refreshProfile();
+        toast.success('🎉 Congratulations! You\'ve advanced to Stage 4: Application Preparation');
+      } catch (error) {
+        console.error('Error updating stage:', error);
+      }
+    }
+  };
+
   // Lock/unlock university
   const toggleLock = async (universityId: string) => {
     if (!user) return;
@@ -221,15 +246,36 @@ export function useUniversities() {
 
       if (error) throw error;
 
-      setShortlist((prev) =>
-        prev.map((s) =>
-          s.university_id === universityId
-            ? { ...s, is_locked: newLockedState, locked_at: newLockedState ? new Date().toISOString() : null }
-            : s
-        )
+      const updatedShortlist = shortlist.map((s) =>
+        s.university_id === universityId
+          ? { ...s, is_locked: newLockedState, locked_at: newLockedState ? new Date().toISOString() : null }
+          : s
       );
+      
+      setShortlist(updatedShortlist);
 
       toast.success(newLockedState ? 'University locked! Ready for application.' : 'University unlocked');
+
+      // Check for stage progression after locking
+      if (newLockedState) {
+        const newLockedCount = updatedShortlist.filter(s => s.is_locked).length;
+        if (newLockedCount === 1) {
+          // First lock - advance to stage 4
+          try {
+            const { error: stageError } = await supabase
+              .from('profiles')
+              .update({ current_stage: 4 })
+              .eq('id', user.id);
+
+            if (!stageError) {
+              await refreshProfile();
+              toast.success('🎉 You\'ve advanced to Stage 4: Application Preparation!');
+            }
+          } catch (err) {
+            console.error('Error updating stage:', err);
+          }
+        }
+      }
     } catch (error) {
       console.error('Error toggling lock:', error);
       toast.error('Failed to update lock status');
