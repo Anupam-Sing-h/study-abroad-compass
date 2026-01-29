@@ -1,9 +1,13 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Send, Loader2, Bot, User } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { ArrowLeft, Send, Loader2, Bot, User, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 import { OnboardingData } from '@/lib/types';
+import { useVoiceOnboarding } from '@/hooks/useVoiceOnboarding';
+import { cn } from '@/lib/utils';
 
 interface AIOnboardingProps {
   onComplete: (data: OnboardingData) => void;
@@ -41,10 +45,41 @@ export default function AIOnboarding({ onComplete, onBack, loading }: AIOnboardi
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const hasPlayedGreeting = useRef(false);
+
+  const {
+    voiceMode,
+    toggleVoiceMode,
+    isRecording,
+    startRecording,
+    stopRecording,
+    partialTranscript,
+    committedTranscripts,
+    playTTS,
+    stopTTS,
+    isPlayingTTS,
+    isFetchingToken,
+  } = useVoiceOnboarding();
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Play greeting when voice mode is enabled for the first time
+  useEffect(() => {
+    if (voiceMode && !hasPlayedGreeting.current && messages.length === 1) {
+      hasPlayedGreeting.current = true;
+      playTTS(messages[0].content);
+    }
+  }, [voiceMode, messages, playTTS]);
+
+  // Update input when user speaks
+  useEffect(() => {
+    if (committedTranscripts.length > 0) {
+      const latestTranscript = committedTranscripts[committedTranscripts.length - 1];
+      setInput(latestTranscript.text);
+    }
+  }, [committedTranscripts]);
 
   const parseAnswer = (key: string, answer: string): any => {
     const lower = answer.toLowerCase().trim();
@@ -102,8 +137,13 @@ export default function AIOnboarding({ onComplete, onBack, loading }: AIOnboardi
     }
   };
 
-  const handleSend = () => {
+  const handleSend = useCallback(() => {
     if (!input.trim()) return;
+
+    // Stop recording if active
+    if (isRecording) {
+      stopRecording();
+    }
 
     const userMessage = input.trim();
     setInput('');
@@ -118,18 +158,29 @@ export default function AIOnboarding({ onComplete, onBack, loading }: AIOnboardi
     if (currentStep < QUESTIONS.length - 1) {
       const nextStep = currentStep + 1;
       setCurrentStep(nextStep);
+      const assistantResponse = `Got it! ${QUESTIONS[nextStep].question}`;
       newMessages.push({ 
         role: 'assistant', 
-        content: `Got it! ${QUESTIONS[nextStep].question}` 
+        content: assistantResponse
       });
       setMessages(newMessages);
+
+      // Play TTS for assistant response
+      if (voiceMode) {
+        playTTS(assistantResponse);
+      }
     } else {
       // Complete onboarding
+      const completionMessage = "Perfect! 🎉 I have all the information I need. Let me set up your profile...";
       newMessages.push({ 
         role: 'assistant', 
-        content: "Perfect! 🎉 I have all the information I need. Let me set up your profile..." 
+        content: completionMessage 
       });
       setMessages(newMessages);
+
+      if (voiceMode) {
+        playTTS(completionMessage);
+      }
 
       // Build the complete data object
       const budgetRange = newAnswers.budget_range || { min: 20000, max: 50000 };
@@ -159,14 +210,43 @@ export default function AIOnboarding({ onComplete, onBack, loading }: AIOnboardi
 
       setTimeout(() => onComplete(data), 1000);
     }
+  }, [input, isRecording, stopRecording, messages, currentStep, answers, voiceMode, playTTS, onComplete]);
+
+  const handleMicToggle = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  };
+
+  const handleReplayTTS = (text: string) => {
+    if (isPlayingTTS) {
+      stopTTS();
+    } else {
+      playTTS(text);
+    }
   };
 
   return (
     <div className="min-h-screen bg-muted/30 py-12 px-4">
       <div className="max-w-2xl mx-auto">
-        <Button variant="ghost" onClick={onBack} className="mb-6">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to selection
-        </Button>
+        <div className="flex items-center justify-between mb-6">
+          <Button variant="ghost" onClick={onBack}>
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back to selection
+          </Button>
+          
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="voice-mode"
+              checked={voiceMode}
+              onCheckedChange={toggleVoiceMode}
+            />
+            <Label htmlFor="voice-mode" className="text-sm text-muted-foreground">
+              Voice Mode
+            </Label>
+          </div>
+        </div>
 
         <Card className="h-[600px] flex flex-col">
           <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -187,7 +267,22 @@ export default function AIOnboarding({ onComplete, onBack, loading }: AIOnboardi
                       : 'bg-muted'
                   }`}
                 >
-                  {msg.content}
+                  <div className="flex items-start gap-2">
+                    <span className="flex-1">{msg.content}</span>
+                    {msg.role === 'assistant' && voiceMode && (
+                      <button
+                        onClick={() => handleReplayTTS(msg.content)}
+                        className="flex-shrink-0 p-1 hover:bg-background/50 rounded transition-colors"
+                        aria-label={isPlayingTTS ? "Stop audio" : "Play audio"}
+                      >
+                        {isPlayingTTS ? (
+                          <VolumeX className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Volume2 className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
                 {msg.role === 'user' && (
                   <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
@@ -196,10 +291,30 @@ export default function AIOnboarding({ onComplete, onBack, loading }: AIOnboardi
                 )}
               </div>
             ))}
+            
+            {/* Show live transcription */}
+            {isRecording && partialTranscript && (
+              <div className="flex gap-3 justify-end">
+                <div className="max-w-[80%] rounded-lg p-3 bg-primary/50 text-primary-foreground animate-pulse">
+                  {partialTranscript}...
+                </div>
+                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                  <User className="h-4 w-4" />
+                </div>
+              </div>
+            )}
+            
             <div ref={messagesEndRef} />
           </CardContent>
 
           <div className="p-4 border-t">
+            {/* Voice mode indicator */}
+            {voiceMode && isRecording && (
+              <div className="mb-2 text-center text-sm text-muted-foreground animate-pulse">
+                🎤 Listening... speak your answer
+              </div>
+            )}
+            
             <form 
               onSubmit={(e) => { e.preventDefault(); handleSend(); }}
               className="flex gap-2"
@@ -207,9 +322,32 @@ export default function AIOnboarding({ onComplete, onBack, loading }: AIOnboardi
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Type your answer..."
+                placeholder={voiceMode ? "Speak or type your answer..." : "Type your answer..."}
                 disabled={loading}
               />
+              
+              {voiceMode && (
+                <Button
+                  type="button"
+                  variant={isRecording ? "destructive" : "outline"}
+                  size="icon"
+                  onClick={handleMicToggle}
+                  disabled={loading || isFetchingToken}
+                  className={cn(
+                    "transition-all",
+                    isRecording && "animate-pulse"
+                  )}
+                >
+                  {isFetchingToken ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : isRecording ? (
+                    <MicOff className="h-4 w-4" />
+                  ) : (
+                    <Mic className="h-4 w-4" />
+                  )}
+                </Button>
+              )}
+              
               <Button type="submit" disabled={!input.trim() || loading}>
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </Button>
