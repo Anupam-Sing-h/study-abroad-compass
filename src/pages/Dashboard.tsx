@@ -9,6 +9,7 @@ import ProfileStrength from '@/components/dashboard/ProfileStrength';
 import StageTracker from '@/components/dashboard/StageTracker';
 import TaskList from '@/components/dashboard/TaskList';
 import QuickActions from '@/components/dashboard/QuickActions';
+import DeadlineReminders from '@/components/dashboard/DeadlineReminders';
 import { Loader2 } from 'lucide-react';
 
 export default function Dashboard() {
@@ -78,13 +79,18 @@ export default function Dashboard() {
           <StageTracker currentStage={profile.current_stage as 1 | 2 | 3 | 4} />
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          <TaskList tasks={tasks || []} />
-          <QuickActions 
-            currentStage={profile.current_stage} 
-            shortlistCount={shortlist?.length || 0}
-            lockedCount={lockedUniversities.length}
-          />
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <TaskList tasks={tasks || []} />
+          </div>
+          <div className="space-y-6">
+            <DeadlineReminders />
+            <QuickActions 
+              currentStage={profile.current_stage} 
+              shortlistCount={shortlist?.length || 0}
+              lockedCount={lockedUniversities.length}
+            />
+          </div>
         </div>
       </div>
     </DashboardLayout>
