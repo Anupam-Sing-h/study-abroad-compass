@@ -36,7 +36,7 @@ export default function Counsellor() {
     if (messages.length === 0 && profile) {
       setMessages([{
         role: 'assistant',
-        content: `Hi ${profile.full_name?.split(' ')[0] || 'there'}! 👋 I'm your AI Counsellor. I've reviewed your profile and I'm ready to help you navigate your study-abroad journey. How can I assist you today?\n\nYou can ask me to:\n• Analyze your profile strengths and gaps\n• Recommend universities that match your profile\n• Explain why certain universities fit you\n• Add universities to your shortlist\n• Create tasks for your to-do list`
+        content: `Hello ${profile.full_name?.split(' ')[0] || 'there'}! I'm delighted to be your personal study abroad counsellor.\n\nI've taken a careful look at your profile, and I'm excited to help you navigate this journey toward your dream university. Whether you're just starting to explore options or ready to finalize your applications, I'm here to provide personalized guidance every step of the way.\n\nHere's how I can help you today:\n\n1. Profile Analysis - Let's identify your strengths and areas we can work on together\n2. University Recommendations - I'll suggest schools that match your academic background, goals, and budget\n3. Application Strategy - We'll discuss timelines, document preparation, and how to present your best self\n4. Shortlist Management - I can help you add universities to your list and explain why each one fits your profile\n5. Task Planning - Together, we'll create actionable next steps for your journey\n\nWhat would you like to discuss first?`
       }]);
     }
   }, [profile, messages.length]);
