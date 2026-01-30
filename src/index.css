@@ -4,121 +4,122 @@
 
 @layer base {
   :root {
-    /* Deep navy and gold - serious, academic, aspirational */
-    --background: 220 25% 98%;
-    --foreground: 220 40% 13%;
+    /* Modern blue-cyan gradient palette inspired by LeverageEdu */
+    --background: 210 40% 98%;
+    --foreground: 215 35% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 40% 13%;
+    --card-foreground: 215 35% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 40% 13%;
+    --popover-foreground: 215 35% 15%;
 
-    /* Rich navy blue - trust, authority, ambition */
-    --primary: 220 65% 35%;
+    /* Vibrant blue - trust, innovation, aspirational */
+    --primary: 215 85% 45%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 20% 94%;
-    --secondary-foreground: 220 40% 13%;
+    --secondary: 210 30% 95%;
+    --secondary-foreground: 215 35% 15%;
 
-    --muted: 220 15% 92%;
-    --muted-foreground: 220 15% 40%;
+    --muted: 210 25% 93%;
+    --muted-foreground: 215 20% 45%;
 
-    --accent: 38 85% 55%;
-    --accent-foreground: 220 40% 13%;
+    /* Warm orange accent for CTAs - like LeverageEdu */
+    --accent: 24 95% 55%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 20% 88%;
-    --input: 220 20% 88%;
-    --ring: 220 65% 35%;
+    --border: 210 25% 88%;
+    --input: 210 25% 88%;
+    --ring: 215 85% 45%;
 
-    --radius: 0.625rem;
+    --radius: 0.75rem;
 
-    /* Sidebar - sophisticated dark navy */
-    --sidebar-background: 220 45% 12%;
-    --sidebar-foreground: 220 15% 85%;
-    --sidebar-primary: 38 85% 55%;
-    --sidebar-primary-foreground: 220 40% 13%;
-    --sidebar-accent: 220 35% 20%;
-    --sidebar-accent-foreground: 220 15% 90%;
-    --sidebar-border: 220 35% 18%;
-    --sidebar-ring: 38 85% 55%;
+    /* Sidebar - clean dark blue */
+    --sidebar-background: 215 45% 12%;
+    --sidebar-foreground: 210 20% 88%;
+    --sidebar-primary: 24 95% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 40% 20%;
+    --sidebar-accent-foreground: 210 20% 92%;
+    --sidebar-border: 215 40% 18%;
+    --sidebar-ring: 24 95% 55%;
 
     /* Custom semantic colors */
-    --success: 152 60% 38%;
+    --success: 152 65% 42%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 220 40% 13%;
-    --info: 200 80% 45%;
+    --warning: 38 95% 52%;
+    --warning-foreground: 215 35% 15%;
+    --info: 195 85% 50%;
     --info-foreground: 0 0% 100%;
 
-    /* Stage colors - progression feel */
-    --stage-complete: 152 60% 38%;
-    --stage-current: 220 65% 35%;
-    --stage-pending: 220 15% 70%;
+    /* Stage colors - vibrant progression */
+    --stage-complete: 152 65% 42%;
+    --stage-current: 215 85% 45%;
+    --stage-pending: 210 20% 75%;
 
     /* University category colors - distinct and meaningful */
-    --dream: 280 70% 50%;
-    --target: 220 65% 35%;
-    --safe: 152 60% 38%;
+    --dream: 280 75% 55%;
+    --target: 215 85% 45%;
+    --safe: 152 65% 42%;
   }
 
   .dark {
-    /* Deep charcoal with warm undertones */
-    --background: 220 30% 8%;
-    --foreground: 220 15% 92%;
+    /* Modern dark theme with blue undertones */
+    --background: 215 35% 8%;
+    --foreground: 210 20% 92%;
 
-    --card: 220 30% 11%;
-    --card-foreground: 220 15% 92%;
+    --card: 215 35% 11%;
+    --card-foreground: 210 20% 92%;
 
-    --popover: 220 30% 11%;
-    --popover-foreground: 220 15% 92%;
+    --popover: 215 35% 11%;
+    --popover-foreground: 210 20% 92%;
 
     /* Brighter primary for dark mode */
-    --primary: 220 70% 55%;
+    --primary: 215 90% 58%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 25% 18%;
-    --secondary-foreground: 220 15% 92%;
+    --secondary: 215 30% 18%;
+    --secondary-foreground: 210 20% 92%;
 
-    --muted: 220 25% 15%;
-    --muted-foreground: 220 15% 55%;
+    --muted: 215 30% 15%;
+    --muted-foreground: 210 20% 55%;
 
-    --accent: 38 85% 55%;
-    --accent-foreground: 220 40% 13%;
+    --accent: 24 95% 58%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 65% 45%;
+    --destructive: 0 68% 48%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 25% 18%;
-    --input: 220 25% 18%;
-    --ring: 220 70% 55%;
+    --border: 215 30% 18%;
+    --input: 215 30% 18%;
+    --ring: 215 90% 58%;
 
-    --sidebar-background: 220 35% 6%;
-    --sidebar-foreground: 220 15% 85%;
-    --sidebar-primary: 38 85% 55%;
-    --sidebar-primary-foreground: 220 40% 13%;
-    --sidebar-accent: 220 30% 14%;
-    --sidebar-accent-foreground: 220 15% 90%;
-    --sidebar-border: 220 30% 14%;
-    --sidebar-ring: 38 85% 55%;
+    --sidebar-background: 215 40% 6%;
+    --sidebar-foreground: 210 20% 88%;
+    --sidebar-primary: 24 95% 58%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 35% 14%;
+    --sidebar-accent-foreground: 210 20% 92%;
+    --sidebar-border: 215 35% 14%;
+    --sidebar-ring: 24 95% 58%;
 
-    --success: 152 55% 42%;
+    --success: 152 60% 45%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 220 40% 13%;
-    --info: 200 80% 50%;
+    --warning: 38 95% 55%;
+    --warning-foreground: 215 35% 15%;
+    --info: 195 85% 55%;
     --info-foreground: 0 0% 100%;
 
-    --stage-complete: 152 55% 42%;
-    --stage-current: 220 70% 55%;
-    --stage-pending: 220 20% 35%;
+    --stage-complete: 152 60% 45%;
+    --stage-current: 215 90% 58%;
+    --stage-pending: 215 25% 35%;
 
-    --dream: 280 65% 60%;
-    --target: 220 70% 55%;
-    --safe: 152 55% 42%;
+    --dream: 280 70% 62%;
+    --target: 215 90% 58%;
+    --safe: 152 60% 45%;
   }
 }
 
@@ -160,8 +161,8 @@
   @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
 }
 
-/* Smooth transitions globally */
-* {
+/* Smooth transitions globally - exclude animations */
+*:not([class*="animate-"]) {
   @apply transition-colors duration-150;
 }
 
@@ -173,4 +174,68 @@
 /* Glass effect for overlays */
 .glass {
   @apply bg-background/80 backdrop-blur-md;
+}
+
+/* Audio waveform animation */
+@keyframes waveform {
+  0%, 100% {
+    height: 4px;
+  }
+  50% {
+    height: 20px;
+  }
+}
+
+.animate-waveform {
+  animation: waveform 0.5s ease-in-out infinite;
+}
+
+/* Gradient text */
+.gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary;
+}
+
+/* Hero gradient background */
+.hero-gradient {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.05) 0%, hsl(var(--accent) / 0.1) 50%, hsl(var(--primary) / 0.05) 100%);
+}
+
+/* Stats card gradient */
+.stats-gradient {
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.8) 100%);
+}
+
+/* Floating animation */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Shimmer effect */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 0%,
+    hsl(var(--background)) 50%,
+    hsl(var(--muted)) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
 }

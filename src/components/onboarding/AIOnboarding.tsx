@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { ArrowLeft, Send, Loader2, Bot, User, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 import { OnboardingData } from '@/lib/types';
 import { useVoiceOnboarding } from '@/hooks/useVoiceOnboarding';
+import { AudioWaveform } from '@/components/ui/AudioWaveform';
 import { cn } from '@/lib/utils';
 
 interface AIOnboardingProps {
@@ -308,10 +309,22 @@ export default function AIOnboarding({ onComplete, onBack, loading }: AIOnboardi
           </CardContent>
 
           <div className="p-4 border-t">
-            {/* Voice mode indicator */}
-            {voiceMode && isRecording && (
-              <div className="mb-2 text-center text-sm text-muted-foreground animate-pulse">
-                🎤 Listening... speak your answer
+            {/* Voice mode indicator with waveform */}
+            {voiceMode && (isRecording || isPlayingTTS) && (
+              <div className="mb-3 flex items-center justify-center gap-3">
+                <AudioWaveform 
+                  isActive={isRecording || isPlayingTTS} 
+                  variant={isRecording ? 'recording' : 'playing'}
+                  className="h-6"
+                />
+                <span className="text-sm text-muted-foreground">
+                  {isRecording ? '🎤 Listening... speak your answer' : '🔊 Speaking...'}
+                </span>
+                <AudioWaveform 
+                  isActive={isRecording || isPlayingTTS} 
+                  variant={isRecording ? 'recording' : 'playing'}
+                  className="h-6"
+                />
               </div>
             )}
             
