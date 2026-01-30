@@ -75,26 +75,66 @@ export default function UniversityCard({
           </div>
         </div>
       )}
+
+      {/* University Image */}
+      <div className="relative h-36 bg-gradient-to-br from-primary/10 to-accent/10 overflow-hidden">
+        {university.image_url ? (
+          <img 
+            src={university.image_url} 
+            alt={university.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <GraduationCap className="h-16 w-16 text-primary/30" />
+          </div>
+        )}
+        {/* Overlay gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
+        
+        {/* Badges on image */}
+        <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+          {isLocked && (
+            <Badge className="bg-primary text-primary-foreground shadow-lg">
+              <Lock className="h-3 w-3 mr-1" />
+              Locked
+            </Badge>
+          )}
+          {category && (
+            <Badge className={cn('capitalize shadow-lg', getCategoryColor(category))}>
+              {category}
+            </Badge>
+          )}
+        </div>
+        
+        {/* Heart button on image */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn(
+            'absolute top-2 right-2 bg-background/80 backdrop-blur-sm hover:bg-background/90 transition-colors shadow-lg',
+            isShortlisted 
+              ? 'text-red-500 hover:text-red-600' 
+              : 'text-muted-foreground hover:text-primary'
+          )}
+          onClick={(e) => {
+            e.stopPropagation();
+            isShortlisted ? onRemoveShortlist(university.id) : onShortlist(university.id);
+          }}
+          disabled={isShortlisting}
+        >
+          {isShortlisted ? <Heart className="h-5 w-5 fill-current" /> : <Heart className="h-5 w-5" />}
+        </Button>
+      </div>
       
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-3">
+      <CardHeader className="pb-2 pt-3">
+        <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
-              {isLocked && (
-                <Badge className="bg-primary text-primary-foreground shrink-0">
-                  <Lock className="h-3 w-3 mr-1" />
-                  Locked
-                </Badge>
-              )}
               {university.ranking && (
                 <Badge variant="secondary" className="shrink-0">
                   <Trophy className="h-3 w-3 mr-1" />
                   #{university.ranking}
-                </Badge>
-              )}
-              {category && (
-                <Badge className={cn('capitalize', getCategoryColor(category))}>
-                  {category}
                 </Badge>
               )}
               {fitScore !== null && fitScore !== undefined && (
@@ -117,23 +157,6 @@ export default function UniversityCard({
               <span className="truncate">{university.city ? `${university.city}, ` : ''}{university.country}</span>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn(
-              'shrink-0 transition-colors',
-              isShortlisted 
-                ? 'text-red-500 hover:text-red-600 hover:bg-red-50' 
-                : 'text-muted-foreground hover:text-primary hover:bg-primary/10'
-            )}
-            onClick={(e) => {
-              e.stopPropagation();
-              isShortlisted ? onRemoveShortlist(university.id) : onShortlist(university.id);
-            }}
-            disabled={isShortlisting}
-          >
-            {isShortlisted ? <Heart className="h-5 w-5 fill-current" /> : <Heart className="h-5 w-5" />}
-          </Button>
         </div>
       </CardHeader>
       
