@@ -61,47 +61,49 @@ export default function UniversityCard({
   return (
     <Card 
       className={cn(
-        "group hover:shadow-lg transition-all duration-300 border-border/50 hover:border-primary/30 overflow-hidden cursor-pointer",
-        isLocked && "ring-2 ring-primary"
+        "group hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 border-border/50 hover:border-primary/30 overflow-hidden cursor-pointer rounded-2xl",
+        isLocked && "ring-2 ring-accent ring-offset-2 ring-offset-background"
       )}
       onClick={onClick}
     >
       {/* Analyzing Overlay */}
       {isCurrentlyAnalyzing && (
-        <div className="absolute inset-0 bg-background/80 flex items-center justify-center z-10 rounded-lg">
-          <div className="flex items-center gap-2 text-primary">
-            <Loader2 className="h-5 w-5 animate-spin" />
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-2xl">
+          <div className="flex flex-col items-center gap-2 text-primary">
+            <div className="p-3 rounded-full bg-primary/10 animate-pulse">
+              <Loader2 className="h-6 w-6 animate-spin" />
+            </div>
             <span className="text-sm font-medium">Analyzing fit...</span>
           </div>
         </div>
       )}
 
       {/* University Image */}
-      <div className="relative h-36 bg-gradient-to-br from-primary/10 to-accent/10 overflow-hidden">
+      <div className="relative h-40 bg-gradient-to-br from-primary/10 via-accent/5 to-primary/5 overflow-hidden">
         {university.image_url ? (
           <img 
             src={university.image_url} 
             alt={university.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/5 to-accent/10">
             <GraduationCap className="h-16 w-16 text-primary/30" />
           </div>
         )}
         {/* Overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
         
         {/* Badges on image */}
-        <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+        <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
           {isLocked && (
-            <Badge className="bg-primary text-primary-foreground shadow-lg">
+            <Badge className="bg-accent text-accent-foreground shadow-lg shadow-accent/25">
               <Lock className="h-3 w-3 mr-1" />
               Locked
             </Badge>
           )}
           {category && (
-            <Badge className={cn('capitalize shadow-lg', getCategoryColor(category))}>
+            <Badge className={cn('capitalize shadow-lg border', getCategoryColor(category))}>
               {category}
             </Badge>
           )}
@@ -112,7 +114,7 @@ export default function UniversityCard({
           variant="ghost"
           size="icon"
           className={cn(
-            'absolute top-2 right-2 bg-background/80 backdrop-blur-sm hover:bg-background/90 transition-colors shadow-lg',
+            'absolute top-3 right-3 bg-card/90 backdrop-blur-sm hover:bg-card transition-all shadow-lg rounded-xl',
             isShortlisted 
               ? 'text-red-500 hover:text-red-600' 
               : 'text-muted-foreground hover:text-primary'
@@ -215,19 +217,22 @@ export default function UniversityCard({
         )}
 
         {/* Actions */}
-        <div className="flex items-center gap-2 pt-2 border-t border-border/50">
+        <div className="flex items-center gap-2 pt-3 border-t border-border/50">
           {university.website_url && (
-            <Button variant="outline" size="sm" className="flex-1" asChild>
+            <Button variant="outline" size="sm" className="flex-1 rounded-xl" asChild>
               <a href={university.website_url} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-                Visit Website
+                Website
               </a>
             </Button>
           )}
           <Button 
             variant={isShortlisted ? "secondary" : "default"} 
             size="sm" 
-            className="flex-1"
+            className={cn(
+              "flex-1 rounded-xl",
+              !isShortlisted && "shadow-lg shadow-primary/25"
+            )}
             onClick={(e) => {
               e.stopPropagation();
               isShortlisted ? onRemoveShortlist(university.id) : onShortlist(university.id);

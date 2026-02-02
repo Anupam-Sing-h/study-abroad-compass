@@ -7,7 +7,7 @@ import UniversityFilters from '@/components/universities/UniversityFilters';
 import UniversityDetailModal from '@/components/universities/UniversityDetailModal';
 import { useUniversities } from '@/hooks/useUniversities';
 import { University } from '@/lib/types';
-import { Loader2, Search, Building2, Heart, Lock } from 'lucide-react';
+import { Loader2, Search, Building2, Heart, Lock, Sparkles } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 
@@ -71,25 +71,37 @@ export default function Universities() {
     <DashboardLayout>
       {/* Header */}
       <div className="mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2 text-foreground">
-              <Building2 className="h-7 w-7 text-primary" />
-              Explore Universities
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Discover and shortlist universities that match your profile
-            </p>
+        <div className="relative overflow-hidden rounded-2xl hero-gradient p-6 md:p-8">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/10 rounded-full blur-2xl" />
+            <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-accent/10 rounded-full blur-2xl" />
           </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="gap-1.5 py-1.5 px-3">
-              <Heart className="h-3.5 w-3.5 fill-primary text-primary" />
-              {shortlistCount} shortlisted
-            </Badge>
-            <Badge variant="default" className="gap-1.5 py-1.5 px-3">
-              <Lock className="h-3.5 w-3.5" />
-              {lockedCount} locked
-            </Badge>
+          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-xl bg-primary shadow-lg shadow-primary/25">
+                <Building2 className="h-7 w-7 text-primary-foreground" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Sparkles className="h-4 w-4 text-accent" />
+                  <span className="text-sm font-medium text-accent">University Explorer</span>
+                </div>
+                <h1 className="text-2xl font-bold text-foreground">Explore Universities</h1>
+                <p className="text-muted-foreground mt-1">
+                  Discover and shortlist universities that match your profile
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Badge variant="secondary" className="gap-1.5 py-2 px-4 text-sm shadow-sm">
+                <Heart className="h-4 w-4 fill-primary text-primary" />
+                {shortlistCount} shortlisted
+              </Badge>
+              <Badge className="gap-1.5 py-2 px-4 text-sm bg-accent text-accent-foreground shadow-lg shadow-accent/25">
+                <Lock className="h-4 w-4" />
+                {lockedCount} locked
+              </Badge>
+            </div>
           </div>
         </div>
       </div>
