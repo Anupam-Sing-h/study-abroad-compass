@@ -146,8 +146,8 @@ export default function UniversityFilters({
 
       {/* Reset Button */}
       {activeFilterCount > 0 && (
-        <Button variant="outline" className="w-full" onClick={handleReset}>
-          <RotateCcw className="h-4 w-4 mr-2" />
+        <Button variant="outline" className="w-full gap-2 rounded-xl" onClick={handleReset}>
+          <RotateCcw className="h-4 w-4" />
           Reset Filters
         </Button>
       )}
@@ -157,9 +157,11 @@ export default function UniversityFilters({
   return (
     <>
       {/* Desktop Filters */}
-      <div className="hidden lg:block p-6 bg-card rounded-xl border border-border">
-        <h3 className="font-semibold mb-4 flex items-center gap-2">
-          <Filter className="h-4 w-4" />
+      <div className="hidden lg:block p-6 bg-card rounded-2xl border border-border shadow-lg">
+        <h3 className="font-semibold mb-4 flex items-center gap-2 text-foreground">
+          <div className="p-1.5 rounded-lg bg-primary/10">
+            <Filter className="h-4 w-4 text-primary" />
+          </div>
           Filters
           {activeFilterCount > 0 && (
             <Badge variant="secondary" className="ml-auto">
@@ -173,11 +175,11 @@ export default function UniversityFilters({
       {/* Mobile Filter Sheet */}
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
-          <Button variant="outline" className="lg:hidden">
-            <Filter className="h-4 w-4 mr-2" />
+          <Button variant="outline" className="lg:hidden gap-2 rounded-xl shadow-sm">
+            <Filter className="h-4 w-4" />
             Filters
             {activeFilterCount > 0 && (
-              <Badge variant="secondary" className="ml-2">
+              <Badge variant="secondary" className="ml-1">
                 {activeFilterCount}
               </Badge>
             )}

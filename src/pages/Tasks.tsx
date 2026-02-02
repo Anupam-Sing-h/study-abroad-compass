@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Plus, ListTodo, CheckCircle2, AlertCircle, Clock, Trash2, Filter, Calendar, Sparkles, Wand2 } from 'lucide-react';
+import { Loader2, Plus, ListTodo, CheckCircle2, AlertCircle, Clock, Trash2, Filter, Calendar, Sparkles, Wand2, ArrowRight } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -166,17 +166,28 @@ export default function Tasks() {
     <DashboardLayout>
       {/* Header */}
       <div className="mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2 text-foreground">
-              <ListTodo className="h-7 w-7 text-primary" />
-              Task Manager
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Track your study abroad preparation tasks
-            </p>
+        <div className="relative overflow-hidden rounded-2xl hero-gradient p-6 md:p-8">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/10 rounded-full blur-2xl" />
+            <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-accent/10 rounded-full blur-2xl" />
           </div>
-          <div className="flex gap-2">
+          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-xl bg-primary shadow-lg shadow-primary/25">
+                <ListTodo className="h-7 w-7 text-primary-foreground" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Sparkles className="h-4 w-4 text-accent" />
+                  <span className="text-sm font-medium text-accent">Task Manager</span>
+                </div>
+                <h1 className="text-2xl font-bold text-foreground">Manage Your Tasks</h1>
+                <p className="text-muted-foreground mt-1">
+                  Track your study abroad preparation tasks and stay on schedule
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2 mt-4 sm:mt-0">
             <Button 
               variant="outline" 
               className="gap-2"
@@ -257,9 +268,12 @@ export default function Tasks() {
                 </div>
               </DialogContent>
             </Dialog>
+            </div>
           </div>
+        </div>
+      </div>
 
-          {/* AI Suggestions Dialog */}
+      {/* AI Suggestions Dialog */}
           <Dialog open={showSuggestionsDialog} onOpenChange={setShowSuggestionsDialog}>
             <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
               <DialogHeader>
@@ -345,8 +359,6 @@ export default function Tasks() {
               </div>
             </DialogContent>
           </Dialog>
-        </div>
-      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -515,9 +527,9 @@ export default function Tasks() {
                           {format(new Date(task.due_date), 'MMM d, yyyy')}
                         </span>
                       )}
-                    </div>
-                  </div>
-                </div>
+          </div>
+        </div>
+      </div>
               ))}
             </div>
           )}

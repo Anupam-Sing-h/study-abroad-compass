@@ -6,7 +6,7 @@ import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { Send, Loader2, Bot, User } from 'lucide-react';
+import { Send, Loader2, Bot, User, Sparkles, MessageSquare } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Message {
@@ -81,57 +81,85 @@ export default function Counsellor() {
   };
 
   if (authLoading) {
-    return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (
     <DashboardLayout>
       <div className="h-[calc(100vh-8rem)] flex flex-col">
-        <h1 className="text-2xl font-bold mb-4">AI Counsellor</h1>
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 rounded-xl bg-primary shadow-lg shadow-primary/25">
+              <MessageSquare className="h-6 w-6 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">AI Counsellor</h1>
+              <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-accent" />
+                Your personal study abroad advisor
+              </p>
+            </div>
+          </div>
+        </div>
         
-        <Card className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <Card className="flex-1 flex flex-col overflow-hidden border-border/50 shadow-lg">
+          {/* Messages Area */}
+          <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
             {messages.map((msg, i) => (
-              <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
+              <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''} animate-fade-in`}>
                 {msg.role === 'assistant' && (
-                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                    <Bot className="h-4 w-4 text-primary-foreground" />
+                  <div className="w-10 h-10 rounded-xl bg-primary shadow-lg shadow-primary/25 flex items-center justify-center flex-shrink-0">
+                    <Bot className="h-5 w-5 text-primary-foreground" />
                   </div>
                 )}
-                <div className={`max-w-[80%] rounded-lg p-3 whitespace-pre-wrap ${
-                  msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                <div className={`max-w-[80%] rounded-2xl p-4 whitespace-pre-wrap ${
+                  msg.role === 'user' 
+                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25' 
+                    : 'bg-muted border border-border'
                 }`}>
                   {msg.content}
                 </div>
                 {msg.role === 'user' && (
-                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                    <User className="h-4 w-4" />
+                  <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center flex-shrink-0">
+                    <User className="h-5 w-5 text-muted-foreground" />
                   </div>
                 )}
               </div>
             ))}
             {isLoading && (
-              <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                  <Bot className="h-4 w-4 text-primary-foreground" />
+              <div className="flex gap-3 animate-fade-in">
+                <div className="w-10 h-10 rounded-xl bg-primary shadow-lg shadow-primary/25 flex items-center justify-center">
+                  <Bot className="h-5 w-5 text-primary-foreground" />
                 </div>
-                <div className="bg-muted rounded-lg p-3">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                <div className="bg-muted border border-border rounded-2xl p-4 flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  <span className="text-sm text-muted-foreground">Thinking...</span>
                 </div>
               </div>
             )}
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="p-4 border-t">
-            <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="flex gap-2">
+          {/* Input Area */}
+          <div className="p-4 border-t border-border bg-card/50">
+            <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="flex gap-3">
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask about universities, your profile, or next steps..."
                 disabled={isLoading}
+                className="flex-1 h-12 rounded-xl"
               />
-              <Button type="submit" disabled={!input.trim() || isLoading}>
+              <Button 
+                type="submit" 
+                disabled={!input.trim() || isLoading}
+                className="h-12 px-6 rounded-xl shadow-lg shadow-primary/25"
+              >
                 <Send className="h-4 w-4" />
               </Button>
             </form>

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { StudentProfile } from '@/lib/types';
-import { BookOpen, FileText, GraduationCap } from 'lucide-react';
+import { BookOpen, FileText, GraduationCap, TrendingUp } from 'lucide-react';
 
 interface ProfileStrengthProps {
   studentProfile: StudentProfile | null;
@@ -21,9 +21,14 @@ const STRENGTH_LABELS: Record<string, { label: string; color: string }> = {
 export default function ProfileStrength({ studentProfile }: ProfileStrengthProps) {
   if (!studentProfile) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Profile Strength</CardTitle>
+      <Card className="border-border/50 shadow-lg hover:shadow-xl transition-shadow">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-primary/10">
+              <TrendingUp className="h-4 w-4 text-primary" />
+            </div>
+            Profile Strength
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">Complete your profile to see strength</p>
@@ -58,45 +63,58 @@ export default function ProfileStrength({ studentProfile }: ProfileStrengthProps
   );
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="border-border/50 shadow-lg hover:shadow-xl transition-shadow">
+      <CardHeader className="pb-2">
         <CardTitle className="text-lg flex items-center justify-between">
-          Profile Strength
-          <span className="text-2xl font-bold text-primary">{overallScore}%</span>
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-primary/10">
+              <TrendingUp className="h-4 w-4 text-primary" />
+            </div>
+            Profile Strength
+          </div>
+          <span className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            {overallScore}%
+          </span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-5">
         <div>
-          <Progress value={overallScore} className="h-2 mb-4" />
+          <Progress value={overallScore} className="h-2.5" />
         </div>
 
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <GraduationCap className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">Academics</span>
+          <div className="flex items-center justify-between p-3 rounded-xl bg-muted/50">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <GraduationCap className="h-4 w-4 text-primary" />
+              </div>
+              <span className="text-sm font-medium">Academics</span>
             </div>
-            <span className={`text-sm font-medium ${academicsStrength.color}`}>
+            <span className={`text-sm font-semibold ${academicsStrength.color}`}>
               {academicsStrength.label}
             </span>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">Exams</span>
+          <div className="flex items-center justify-between p-3 rounded-xl bg-muted/50">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-accent/10">
+                <BookOpen className="h-4 w-4 text-accent" />
+              </div>
+              <span className="text-sm font-medium">Exams</span>
             </div>
-            <span className={`text-sm font-medium ${examsStrength.color}`}>
+            <span className={`text-sm font-semibold ${examsStrength.color}`}>
               {examsStrength.label}
             </span>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <FileText className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">Documents</span>
+          <div className="flex items-center justify-between p-3 rounded-xl bg-muted/50">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-info/10">
+                <FileText className="h-4 w-4 text-info" />
+              </div>
+              <span className="text-sm font-medium">Documents</span>
             </div>
-            <span className={`text-sm font-medium ${docsStrength.color}`}>
+            <span className={`text-sm font-semibold ${docsStrength.color}`}>
               {docsStrength.label}
             </span>
           </div>

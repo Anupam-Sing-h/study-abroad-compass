@@ -12,16 +12,18 @@ export default function DeadlineReminders() {
 
   if (loading) {
     return (
-      <Card>
+      <Card className="border-border/50 shadow-lg">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2">
-            <Bell className="h-5 w-5" />
+            <div className="p-1.5 rounded-lg bg-destructive/10">
+              <Bell className="h-4 w-4 text-destructive" />
+            </div>
             Deadline Reminders
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-16 w-full" />
+            <Skeleton key={i} className="h-16 w-full rounded-xl" />
           ))}
         </CardContent>
       </Card>
@@ -30,17 +32,21 @@ export default function DeadlineReminders() {
 
   if (reminders.length === 0) {
     return (
-      <Card>
+      <Card className="border-border/50 shadow-lg hover:shadow-xl transition-shadow">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2">
-            <Bell className="h-5 w-5" />
+            <div className="p-1.5 rounded-lg bg-muted">
+              <Bell className="h-4 w-4 text-muted-foreground" />
+            </div>
             Deadline Reminders
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-6 text-muted-foreground">
-            <Calendar className="h-10 w-10 mx-auto mb-3 opacity-50" />
-            <p className="text-sm">No upcoming deadlines</p>
+          <div className="text-center py-8 text-muted-foreground">
+            <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
+              <Calendar className="h-6 w-6 opacity-50" />
+            </div>
+            <p className="text-sm font-medium">No upcoming deadlines</p>
             <p className="text-xs mt-1">Lock universities to track their deadlines</p>
           </div>
         </CardContent>
@@ -79,46 +85,50 @@ export default function DeadlineReminders() {
   };
 
   return (
-    <Card>
+    <Card className="border-border/50 shadow-lg hover:shadow-xl transition-shadow">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
-            <Bell className="h-5 w-5" />
+            <div className="p-1.5 rounded-lg bg-destructive/10">
+              <Bell className="h-4 w-4 text-destructive" />
+            </div>
             Deadline Reminders
           </CardTitle>
           <div className="flex gap-2">
             {criticalCount > 0 && (
-              <Badge variant="destructive" className="text-xs">
+              <Badge variant="destructive" className="text-xs shadow-sm">
                 {criticalCount} urgent
               </Badge>
             )}
             {warningCount > 0 && (
-              <Badge variant="default" className="text-xs">
+              <Badge variant="default" className="text-xs shadow-sm">
                 {warningCount} soon
               </Badge>
             )}
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-2">
         {reminders.slice(0, 5).map((reminder) => {
           const styles = getUrgencyStyles(reminder.urgency);
           return (
             <div
               key={reminder.id}
               className={cn(
-                'flex items-center justify-between p-3 rounded-lg border',
+                'flex items-center justify-between p-3 rounded-xl border transition-all hover:shadow-sm',
                 styles.bg
               )}
             >
               <div className="flex items-center gap-3">
-                {styles.icon}
+                <div className="p-2 rounded-lg bg-background/50">
+                  {styles.icon}
+                </div>
                 <div>
                   <p className="font-medium text-sm">{reminder.universityName}</p>
                   <p className="text-xs text-muted-foreground">{reminder.deadline}</p>
                 </div>
               </div>
-              <Badge variant={styles.badge} className="text-xs whitespace-nowrap">
+              <Badge variant={styles.badge} className="text-xs whitespace-nowrap shadow-sm">
                 {formatDaysRemaining(reminder.daysRemaining)}
               </Badge>
             </div>
@@ -127,7 +137,7 @@ export default function DeadlineReminders() {
 
         {reminders.length > 5 && (
           <Link to="/universities">
-            <Button variant="ghost" className="w-full mt-2" size="sm">
+            <Button variant="ghost" className="w-full mt-2 rounded-xl" size="sm">
               View all {reminders.length} deadlines
               <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
