@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardModern } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -212,12 +212,17 @@ export default function ProfileWizard() {
   return (
     <div className="space-y-6">
       {/* Progress Header */}
-      <Card className="border-primary/20">
-        <CardContent className="pt-6">
+      <CardModern className="overflow-hidden">
+        <div className="p-6 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5">
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-lg font-semibold">Profile Completion</h2>
-              <p className="text-sm text-muted-foreground">Complete your profile to get personalized recommendations</p>
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-xl bg-primary shadow-lg shadow-primary/25">
+                <Sparkles className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold">Profile Completion</h2>
+                <p className="text-sm text-muted-foreground">Complete your profile for personalized recommendations</p>
+              </div>
             </div>
             <div className="text-right">
               <span className="text-3xl font-bold text-primary">{completionPercentage}%</span>
@@ -225,27 +230,30 @@ export default function ProfileWizard() {
             </div>
           </div>
           <Progress value={completionPercentage} className="h-2" />
-        </CardContent>
-      </Card>
+        </div>
+      </CardModern>
 
       {/* Step Navigation */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center bg-card/50 backdrop-blur-sm rounded-2xl p-4 border border-border/50">
         {WIZARD_STEPS.map((s, index) => (
           <button
             key={s.id}
             onClick={() => setCurrentStep(index)}
             className={cn(
-              'flex flex-col items-center gap-1 p-2 rounded-lg transition-all',
-              index === currentStep && 'bg-primary/10',
-              index !== currentStep && 'opacity-60 hover:opacity-100'
+              'flex flex-col items-center gap-2 p-3 rounded-xl transition-all',
+              index === currentStep && 'bg-primary/10 scale-105',
+              index !== currentStep && 'opacity-60 hover:opacity-100 hover:bg-muted/50'
             )}
           >
             <div className={cn(
-              'w-10 h-10 rounded-full flex items-center justify-center',
-              getStepCompletion(index) ? 'bg-stage-complete text-success-foreground' : 
-              index === currentStep ? 'bg-primary text-primary-foreground' : 'bg-muted'
+              'w-12 h-12 rounded-xl flex items-center justify-center transition-all',
+              getStepCompletion(index) 
+                ? 'bg-success text-success-foreground shadow-lg shadow-success/25' 
+                : index === currentStep 
+                  ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25' 
+                  : 'bg-muted text-muted-foreground'
             )}>
-              {getStepCompletion(index) ? <Check className="h-4 w-4" /> : s.icon}
+              {getStepCompletion(index) ? <Check className="h-5 w-5" /> : s.icon}
             </div>
             <span className="text-xs font-medium hidden md:block">{s.title}</span>
           </button>
@@ -253,22 +261,24 @@ export default function ProfileWizard() {
       </div>
 
       {/* Current Step Content */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            {step.icon}
+      <CardModern className="animate-fade-in">
+        <CardHeader className="border-b border-border/50 bg-gradient-to-r from-primary/5 via-transparent to-accent/5">
+          <CardTitle className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
+              {step.icon}
+            </div>
             {step.title}
           </CardTitle>
           <CardDescription>{step.description}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pt-6">
           {step.id === 'academics' && (
             <>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label>Education Level</Label>
                   <Select value={formData.education_level} onValueChange={(v) => handleChange('education_level', v)}>
-                    <SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger>
+                    <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Select level" /></SelectTrigger>
                     <SelectContent>
                       {EDUCATION_LEVELS.map(level => (
                         <SelectItem key={level} value={level}>{level}</SelectItem>
@@ -279,7 +289,7 @@ export default function ProfileWizard() {
                 <div className="space-y-2">
                   <Label>Degree</Label>
                   <Select value={formData.degree} onValueChange={(v) => handleChange('degree', v)}>
-                    <SelectTrigger><SelectValue placeholder="Select degree" /></SelectTrigger>
+                    <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Select degree" /></SelectTrigger>
                     <SelectContent>
                       {DEGREES.map(degree => (
                         <SelectItem key={degree} value={degree}>{degree}</SelectItem>
@@ -294,6 +304,7 @@ export default function ProfileWizard() {
                   value={formData.major} 
                   onChange={(e) => handleChange('major', e.target.value)}
                   placeholder="e.g., Computer Science"
+                  className="h-11 rounded-xl"
                 />
               </div>
               <div className="grid gap-4 md:grid-cols-2">
@@ -305,6 +316,7 @@ export default function ProfileWizard() {
                     value={formData.gpa} 
                     onChange={(e) => handleChange('gpa', e.target.value)}
                     placeholder="e.g., 8.5"
+                    className="h-11 rounded-xl"
                   />
                 </div>
                 <div className="space-y-2">
@@ -314,6 +326,7 @@ export default function ProfileWizard() {
                     value={formData.graduation_year} 
                     onChange={(e) => handleChange('graduation_year', e.target.value)}
                     placeholder="e.g., 2024"
+                    className="h-11 rounded-xl"
                   />
                 </div>
               </div>
@@ -326,7 +339,7 @@ export default function ProfileWizard() {
                 <div className="space-y-2">
                   <Label>Target Degree</Label>
                   <Select value={formData.target_degree} onValueChange={(v) => handleChange('target_degree', v)}>
-                    <SelectTrigger><SelectValue placeholder="Select target degree" /></SelectTrigger>
+                    <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Select target degree" /></SelectTrigger>
                     <SelectContent>
                       {TARGET_DEGREES.map(degree => (
                         <SelectItem key={degree} value={degree}>{degree}</SelectItem>
@@ -341,6 +354,7 @@ export default function ProfileWizard() {
                     value={formData.target_intake_year} 
                     onChange={(e) => handleChange('target_intake_year', e.target.value)}
                     placeholder="e.g., 2025"
+                    className="h-11 rounded-xl"
                   />
                 </div>
               </div>
@@ -350,6 +364,7 @@ export default function ProfileWizard() {
                   value={formData.target_field} 
                   onChange={(e) => handleChange('target_field', e.target.value)}
                   placeholder="e.g., Data Science, Business Analytics"
+                  className="h-11 rounded-xl"
                 />
               </div>
               <div className="space-y-2">
@@ -359,7 +374,10 @@ export default function ProfileWizard() {
                     <Badge
                       key={country}
                       variant={formData.target_countries.includes(country) ? 'default' : 'outline'}
-                      className="cursor-pointer"
+                      className={cn(
+                        "cursor-pointer transition-all hover:scale-105",
+                        formData.target_countries.includes(country) && "shadow-md shadow-primary/25"
+                      )}
                       onClick={() => toggleCountry(country)}
                     >
                       {country}
@@ -380,6 +398,7 @@ export default function ProfileWizard() {
                     value={formData.budget_min} 
                     onChange={(e) => handleChange('budget_min', e.target.value)}
                     placeholder="e.g., 20000"
+                    className="h-11 rounded-xl"
                   />
                 </div>
                 <div className="space-y-2">
@@ -389,13 +408,14 @@ export default function ProfileWizard() {
                     value={formData.budget_max} 
                     onChange={(e) => handleChange('budget_max', e.target.value)}
                     placeholder="e.g., 50000"
+                    className="h-11 rounded-xl"
                   />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label>Funding Plan</Label>
                 <Select value={formData.funding_plan} onValueChange={(v) => handleChange('funding_plan', v)}>
-                  <SelectTrigger><SelectValue placeholder="How will you fund your studies?" /></SelectTrigger>
+                  <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="How will you fund your studies?" /></SelectTrigger>
                   <SelectContent>
                     {FUNDING_PLANS.map(plan => (
                       <SelectItem key={plan} value={plan}>{plan}</SelectItem>
@@ -409,13 +429,16 @@ export default function ProfileWizard() {
           {step.id === 'exams' && (
             <div className="space-y-6">
               {/* IELTS */}
-              <div className="p-4 border rounded-lg space-y-3">
-                <h4 className="font-medium">IELTS</h4>
+              <div className="p-4 rounded-xl border border-border/50 bg-muted/30 space-y-3">
+                <h4 className="font-medium flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-primary" />
+                  IELTS
+                </h4>
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label>Status</Label>
                     <Select value={formData.ielts_status} onValueChange={(v) => handleChange('ielts_status', v)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {EXAM_STATUSES.map(status => (
                           <SelectItem key={status} value={status}>{status.replace('_', ' ')}</SelectItem>
@@ -432,6 +455,7 @@ export default function ProfileWizard() {
                         value={formData.ielts_score} 
                         onChange={(e) => handleChange('ielts_score', e.target.value)}
                         placeholder="e.g., 7.5"
+                        className="h-11 rounded-xl"
                       />
                     </div>
                   )}
@@ -439,13 +463,16 @@ export default function ProfileWizard() {
               </div>
 
               {/* TOEFL */}
-              <div className="p-4 border rounded-lg space-y-3">
-                <h4 className="font-medium">TOEFL</h4>
+              <div className="p-4 rounded-xl border border-border/50 bg-muted/30 space-y-3">
+                <h4 className="font-medium flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-accent" />
+                  TOEFL
+                </h4>
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label>Status</Label>
                     <Select value={formData.toefl_status} onValueChange={(v) => handleChange('toefl_status', v)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {EXAM_STATUSES.map(status => (
                           <SelectItem key={status} value={status}>{status.replace('_', ' ')}</SelectItem>
@@ -461,6 +488,7 @@ export default function ProfileWizard() {
                         value={formData.toefl_score} 
                         onChange={(e) => handleChange('toefl_score', e.target.value)}
                         placeholder="e.g., 105"
+                        className="h-11 rounded-xl"
                       />
                     </div>
                   )}
@@ -468,13 +496,16 @@ export default function ProfileWizard() {
               </div>
 
               {/* GRE */}
-              <div className="p-4 border rounded-lg space-y-3">
-                <h4 className="font-medium">GRE</h4>
+              <div className="p-4 rounded-xl border border-border/50 bg-muted/30 space-y-3">
+                <h4 className="font-medium flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-success" />
+                  GRE
+                </h4>
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label>Status</Label>
                     <Select value={formData.gre_status} onValueChange={(v) => handleChange('gre_status', v)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {EXAM_STATUSES.map(status => (
                           <SelectItem key={status} value={status}>{status.replace('_', ' ')}</SelectItem>
@@ -490,6 +521,7 @@ export default function ProfileWizard() {
                         value={formData.gre_score} 
                         onChange={(e) => handleChange('gre_score', e.target.value)}
                         placeholder="e.g., 320"
+                        className="h-11 rounded-xl"
                       />
                     </div>
                   )}
@@ -497,13 +529,16 @@ export default function ProfileWizard() {
               </div>
 
               {/* GMAT */}
-              <div className="p-4 border rounded-lg space-y-3">
-                <h4 className="font-medium">GMAT</h4>
+              <div className="p-4 rounded-xl border border-border/50 bg-muted/30 space-y-3">
+                <h4 className="font-medium flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-warning" />
+                  GMAT
+                </h4>
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label>Status</Label>
                     <Select value={formData.gmat_status} onValueChange={(v) => handleChange('gmat_status', v)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {EXAM_STATUSES.map(status => (
                           <SelectItem key={status} value={status}>{status.replace('_', ' ')}</SelectItem>
@@ -519,6 +554,7 @@ export default function ProfileWizard() {
                         value={formData.gmat_score} 
                         onChange={(e) => handleChange('gmat_score', e.target.value)}
                         placeholder="e.g., 700"
+                        className="h-11 rounded-xl"
                       />
                     </div>
                   )}
@@ -529,12 +565,15 @@ export default function ProfileWizard() {
 
           {step.id === 'documents' && (
             <div className="space-y-4">
-              <div className="p-4 border rounded-lg space-y-3">
-                <h4 className="font-medium">Statement of Purpose (SOP)</h4>
+              <div className="p-4 rounded-xl border border-border/50 bg-muted/30 space-y-3">
+                <h4 className="font-medium flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-primary" />
+                  Statement of Purpose (SOP)
+                </h4>
                 <div className="space-y-2">
                   <Label>Status</Label>
                   <Select value={formData.sop_status} onValueChange={(v) => handleChange('sop_status', v)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {DOCUMENT_STATUSES.map(status => (
                         <SelectItem key={status} value={status}>{status.replace('_', ' ')}</SelectItem>
@@ -543,13 +582,13 @@ export default function ProfileWizard() {
                   </Select>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground">
-                More document types (LORs, Resume, Transcripts) will be added soon.
+              <p className="text-sm text-muted-foreground bg-muted/50 p-4 rounded-xl">
+                💡 More document types (LORs, Resume, Transcripts) will be added soon.
               </p>
             </div>
           )}
         </CardContent>
-      </Card>
+      </CardModern>
 
       {/* Navigation Buttons */}
       <div className="flex justify-between">
@@ -557,6 +596,7 @@ export default function ProfileWizard() {
           variant="outline"
           onClick={prevStep}
           disabled={currentStep === 0}
+          className="rounded-xl"
         >
           <ChevronLeft className="h-4 w-4 mr-1" />
           Previous
@@ -564,6 +604,7 @@ export default function ProfileWizard() {
         <Button
           onClick={nextStep}
           disabled={saving}
+          className="rounded-xl shadow-lg shadow-primary/25"
         >
           {saving ? 'Saving...' : currentStep === WIZARD_STEPS.length - 1 ? 'Finish' : 'Save & Continue'}
           {!saving && currentStep < WIZARD_STEPS.length - 1 && <ChevronRight className="h-4 w-4 ml-1" />}

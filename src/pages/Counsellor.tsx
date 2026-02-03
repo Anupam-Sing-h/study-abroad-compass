@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
+import { CardGlass } from '@/components/ui/card';
 import { Send, Loader2, Bot, User, Sparkles, MessageSquare } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -82,8 +82,12 @@ export default function Counsellor() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center hero-gradient relative overflow-hidden">
+        <div className="absolute -top-32 -right-32 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
+        <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
+        <div className="relative z-10 p-4 rounded-2xl bg-card/80 backdrop-blur-sm border border-border shadow-2xl">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        </div>
       </div>
     );
   }
@@ -91,10 +95,14 @@ export default function Counsellor() {
   return (
     <DashboardLayout>
       <div className="h-[calc(100vh-8rem)] flex flex-col">
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-xl bg-primary shadow-lg shadow-primary/25">
+        {/* Header with hero gradient */}
+        <div className="relative overflow-hidden rounded-2xl hero-gradient p-6 mb-6">
+          {/* Decorative blur elements */}
+          <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/20 rounded-full blur-3xl" />
+          <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-accent/20 rounded-full blur-3xl" />
+          
+          <div className="relative z-10 flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-primary shadow-lg shadow-primary/25">
               <MessageSquare className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
@@ -107,7 +115,7 @@ export default function Counsellor() {
           </div>
         </div>
         
-        <Card className="flex-1 flex flex-col overflow-hidden border-border/50 shadow-lg">
+        <CardGlass className="flex-1 flex flex-col overflow-hidden border-border/50 shadow-2xl">
           {/* Messages Area */}
           <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
             {messages.map((msg, i) => (
@@ -164,7 +172,7 @@ export default function Counsellor() {
               </Button>
             </form>
           </div>
-        </Card>
+        </CardGlass>
       </div>
     </DashboardLayout>
   );
