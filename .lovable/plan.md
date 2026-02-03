@@ -1,140 +1,217 @@
 
-# Plan: Add Speech-to-Text and Text-to-Speech to AI Onboarding
+# Theme & Layout Consistency Improvements
 
 ## Overview
-This plan adds voice interaction capabilities to the AI-led onboarding experience, allowing students to speak their answers and hear AI responses read aloud using ElevenLabs' real-time STT and TTS APIs.
+Based on my analysis, the modern LeverageEdu-inspired theme has been partially applied but needs refinement for a consistent experience across all pages. This plan addresses visual inconsistencies and structural improvements.
 
-## Architecture
+---
 
-```text
-+-------------------+     +------------------+     +-------------------+
-|   AIOnboarding    |     |  Edge Functions  |     |    ElevenLabs     |
-|    Component      |     |                  |     |       API         |
-+-------------------+     +------------------+     +-------------------+
-        |                         |                        |
-        |-- Mic Recording ------->|                        |
-        |                         |-- STT Request -------->|
-        |                         |<-- Transcription ------|
-        |<-- User Text -----------|                        |
-        |                         |                        |
-        |-- AI Response Text ---->|                        |
-        |                         |-- TTS Request -------->|
-        |                         |<-- Audio Stream -------|
-        |<-- Play Audio ----------|                        |
-+-------------------+     +------------------+     +-------------------+
-```
+## 1. Standardize Page Headers (Dashboard Pattern)
 
-## Implementation Steps
-
-### Step 1: Connect ElevenLabs API
-Use the ElevenLabs connector to set up the API key as an environment variable.
-
-### Step 2: Create TTS Edge Function
-Create a new edge function `elevenlabs-tts` that:
-- Receives text from the client
-- Calls ElevenLabs TTS API with a professional, warm voice (e.g., "Sarah" or "George")
-- Returns audio as binary data for playback
-
-### Step 3: Create STT Token Edge Function
-Create a new edge function `elevenlabs-scribe-token` that:
-- Generates a single-use token for real-time STT
-- Returns the token to the client for WebSocket connection
-
-### Step 4: Install ElevenLabs React SDK
-Add `@elevenlabs/react` package for real-time speech-to-text using the `useScribe` hook.
-
-### Step 5: Update AIOnboarding Component
-Enhance the component with:
-- Voice mode toggle button
-- Microphone button for voice input (using `useScribe` hook)
-- Auto-play TTS when AI responds
-- Visual indicators for recording/speaking states
-- Fallback to text input when voice is unavailable
-
-### Step 6: Update Supabase Config
-Add the new edge functions to `supabase/config.toml`.
-
-## Technical Details
-
-### New Edge Functions
-
-**1. `supabase/functions/elevenlabs-tts/index.ts`**
-- Accepts `{ text, voiceId? }` in request body
-- Uses voice "EXAVITQu4vr4xnSDxMaL" (Sarah - warm, professional female voice)
-- Returns MP3 audio binary
-- Uses `ELEVENLABS_API_KEY` environment variable
-
-**2. `supabase/functions/elevenlabs-scribe-token/index.ts`**
-- Generates single-use token for real-time transcription
-- Token valid for 15 minutes
-- Used by `useScribe` hook on client
-
-### Enhanced AIOnboarding Component
+All authenticated pages should follow the same hero header pattern used in Dashboard:
 
 ```text
-+------------------------------------------+
-|           AI Onboarding Chat             |
-+------------------------------------------+
-|                                          |
-|  [Bot] Hi! I'm your AI Counsellor...     |
-|                                          |
-|         [User] Bachelor's degree         |
-|                                          |
-|  [Bot] Great! What's your major?    [🔊] |
-|                                          |
-+------------------------------------------+
-|  [Type or speak...]         [🎤] [Send]  |
-|  [ ] Enable Voice Mode                   |
-+------------------------------------------+
++----------------------------------------------------------+
+|  [decorative blur top-right]     hero-gradient bg        |
+|                                                          |
+|  [Icon Badge]  Section Title                             |
+|  [Sparkles]    Subtitle text                             |
+|                                                          |
+|  [decorative blur bottom-left]                           |
++----------------------------------------------------------+
 ```
 
-Features:
-- Toggle switch for voice mode
-- Microphone button with pulsing animation when recording
-- Speaker icon on AI messages to replay audio
-- Visual transcript updates as user speaks
-- Automatic TTS playback when AI responds
+**Pages to Update:**
+- `AIOnboarding.tsx` - Currently uses plain `bg-muted/30`
+- `Counsellor.tsx` - Header lacks decorative blur elements
+- `ProfileWizard.tsx` - Missing hero header entirely
 
-### Dependencies
-- `@elevenlabs/react` - For real-time STT via `useScribe` hook
-- ElevenLabs API Key via connector
+---
 
-### Voice Settings
-- **TTS Voice**: Sarah (EXAVITQu4vr4xnSDxMaL) - warm, professional
-- **Model**: eleven_turbo_v2_5 (low latency, good quality)
-- **STT Model**: scribe_v2_realtime with VAD (voice activity detection)
+## 2. Create Reusable Header Component
 
-## Files to Create/Modify
+Create a new `PageHeader` component to ensure consistency:
 
-| File | Action | Description |
-|------|--------|-------------|
-| `supabase/functions/elevenlabs-tts/index.ts` | Create | TTS edge function |
-| `supabase/functions/elevenlabs-scribe-token/index.ts` | Create | STT token generator |
-| `supabase/config.toml` | Modify | Add new function configs |
-| `src/components/onboarding/AIOnboarding.tsx` | Modify | Add voice UI and logic |
-| `package.json` | Modify | Add @elevenlabs/react |
+**File:** `src/components/ui/PageHeader.tsx`
 
-## User Experience Flow
+**Props:**
+- `icon` - Lucide icon component
+- `title` - Main heading
+- `subtitle` - Description text
+- `badge` - Optional badge text (e.g., "AI-Powered")
+- `actions` - Optional right-side buttons
 
-1. User selects "AI-Led Conversation" on onboarding
-2. Voice mode toggle appears (off by default)
-3. User enables voice mode
-4. Browser requests microphone permission
-5. AI greeting plays via TTS automatically
-6. User taps mic button to answer
-7. Real-time transcription shows as user speaks
-8. User stops speaking (VAD detects silence) or taps mic again
-9. Transcription becomes the answer
-10. AI responds with next question (plays via TTS)
-11. Repeat until onboarding complete
+---
 
-## Error Handling
-- Graceful fallback to text-only if microphone denied
-- Toast notifications for API errors
-- Retry logic for network issues
-- Clear loading states during TTS/STT processing
+## 3. Modernize AI Onboarding Chat
 
-## Accessibility Considerations
-- Voice mode is optional, text always available
-- Visual indicators sync with audio states
-- Transcripts visible for all spoken content
+**File:** `src/components/onboarding/AIOnboarding.tsx`
+
+**Changes:**
+- Add `hero-gradient` background with decorative blur elements
+- Update chat card with modern styling: `shadow-2xl border-border/50 bg-card/95`
+- Add subtle gradient header to chat card
+- Improve message bubble styling with shadows
+- Add `animate-fade-in` to messages
+
+---
+
+## 4. Update Profile Wizard Cards
+
+**File:** `src/components/profile/ProfileWizard.tsx`
+
+**Changes:**
+- Add hero-gradient header to the main completion card
+- Update step indicators with modern pill styling
+- Add subtle shadows to form section cards
+- Use consistent icon badge pattern: `p-3 rounded-xl bg-primary/10`
+- Add progress animations
+
+---
+
+## 5. Enhance University Detail Modal
+
+**File:** `src/components/universities/UniversityDetailModal.tsx`
+
+**Changes:**
+- Add university image as header background with gradient overlay
+- Modern header with icon badges
+- Improve section cards with `bg-muted/50` backgrounds
+- Add `animate-fade-in` to sections
+- Better action button styling with shadows
+
+---
+
+## 6. Create Consistent Card Variants
+
+**File:** `src/components/ui/card.tsx` (extend)
+
+Add new card variants:
+- `CardModern` - With shadow and hover effects
+- `CardGlass` - With backdrop blur and transparency
+- `CardStats` - For statistics display with icon
+
+---
+
+## 7. Standardize Loading States
+
+**Create:** `src/components/ui/PageLoader.tsx`
+
+Full-page loading spinner with:
+- Gradient background matching theme
+- Animated logo or spinner
+- Optional loading text
+
+---
+
+## 8. Add Empty State Components
+
+**Create:** `src/components/ui/EmptyState.tsx`
+
+Modern empty states with:
+- Illustrated icons
+- Gradient backgrounds
+- Action buttons
+- Consistent messaging
+
+---
+
+## 9. Improve Form Input Consistency
+
+**Files to Update:**
+- All form inputs should use `h-11 rounded-xl` sizing
+- Add left icon padding consistently: `pl-10`
+- Use `shadow-sm` on focus
+- Consistent placeholder styling
+
+---
+
+## 10. Update NotFound Page
+
+**File:** `src/pages/NotFound.tsx`
+
+Add modern 404 page with:
+- Hero gradient background
+- Large illustrated icon
+- Gradient text for "404"
+- Action button to return home
+
+---
+
+## 11. Enhance Floating AI Assistant
+
+**File:** `src/components/FloatingAIAssistant.tsx`
+
+**Changes:**
+- Add gradient border on hover
+- Improve tooltip with richer content
+- Add subtle entrance animation
+- Better shadow on hover: `shadow-xl shadow-primary/30`
+
+---
+
+## 12. Add Consistent Animation Classes
+
+**File:** `src/index.css`
+
+Add new utility classes:
+- `.card-modern` - Standard hover + shadow
+- `.btn-glow` - Glowing button effect
+- `.section-fade` - Staggered fade-in for sections
+- `.icon-badge` - Standard icon container styling
+
+---
+
+## 13. Form Onboarding Updates
+
+**File:** `src/components/onboarding/FormOnboarding.tsx`
+
+Apply same patterns:
+- Hero gradient background
+- Modern card styling
+- Consistent step indicators
+- Animated transitions between steps
+
+---
+
+## Implementation Priority
+
+| Priority | Component | Impact |
+|----------|-----------|--------|
+| High | PageHeader component | Affects all pages |
+| High | AIOnboarding.tsx | Key user flow |
+| High | ProfileWizard.tsx | Important for profile |
+| Medium | UniversityDetailModal | Detail views |
+| Medium | Empty states | UX polish |
+| Medium | Loading states | UX polish |
+| Low | NotFound page | Edge case |
+| Low | Animation utilities | Enhancement |
+
+---
+
+## Files to Create
+1. `src/components/ui/PageHeader.tsx`
+2. `src/components/ui/PageLoader.tsx`
+3. `src/components/ui/EmptyState.tsx`
+
+## Files to Modify
+1. `src/components/onboarding/AIOnboarding.tsx`
+2. `src/components/onboarding/FormOnboarding.tsx`
+3. `src/components/profile/ProfileWizard.tsx`
+4. `src/components/universities/UniversityDetailModal.tsx`
+5. `src/components/FloatingAIAssistant.tsx`
+6. `src/pages/NotFound.tsx`
+7. `src/pages/Counsellor.tsx`
+8. `src/index.css`
+9. `src/components/ui/card.tsx`
+
+---
+
+## Expected Outcome
+
+After implementing these changes:
+- Every page will have a consistent header pattern
+- Cards and containers will follow the same styling rules
+- Animations will be smooth and consistent
+- Empty and loading states will match the brand
+- The entire app will feel cohesive and premium
