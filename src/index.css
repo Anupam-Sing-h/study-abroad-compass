@@ -239,3 +239,71 @@
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
 }
+
+/* Modern card utility class */
+.card-modern {
+  @apply rounded-2xl border border-border/50 bg-card shadow-lg shadow-primary/5;
+  @apply hover:shadow-xl hover:shadow-primary/10 hover:border-primary/20;
+  @apply transition-all duration-300;
+}
+
+/* Glowing button effect */
+.btn-glow {
+  @apply relative overflow-hidden;
+}
+
+.btn-glow::before {
+  content: '';
+  @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent;
+  @apply -translate-x-full;
+  animation: btn-glow-sweep 2s infinite;
+}
+
+@keyframes btn-glow-sweep {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Section fade-in for staggered animations */
+.section-fade > * {
+  @apply animate-fade-in;
+}
+
+.section-fade > *:nth-child(1) { animation-delay: 0ms; }
+.section-fade > *:nth-child(2) { animation-delay: 50ms; }
+.section-fade > *:nth-child(3) { animation-delay: 100ms; }
+.section-fade > *:nth-child(4) { animation-delay: 150ms; }
+.section-fade > *:nth-child(5) { animation-delay: 200ms; }
+
+/* Icon badge utility */
+.icon-badge {
+  @apply p-3 rounded-xl bg-primary/10 text-primary;
+}
+
+.icon-badge-solid {
+  @apply p-3 rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/25;
+}
+
+/* Modern input styling */
+.input-modern {
+  @apply h-11 rounded-xl border-border/50 bg-background/50;
+  @apply focus:border-primary/50 focus:ring-2 focus:ring-primary/20;
+  @apply transition-all duration-200;
+}
+
+/* Entrance animation */
+@keyframes entrance {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-entrance {
+  animation: entrance 0.4s ease-out forwards;
+}

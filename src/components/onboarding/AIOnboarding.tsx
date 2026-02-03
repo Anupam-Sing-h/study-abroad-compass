@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { CardGlass, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Send, Loader2, Bot, User, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, Bot, User, Mic, MicOff, Volume2, VolumeX, Sparkles, MessageSquare } from 'lucide-react';
 import { OnboardingData } from '@/lib/types';
 import { useVoiceOnboarding } from '@/hooks/useVoiceOnboarding';
 import { AudioWaveform } from '@/components/ui/AudioWaveform';
@@ -230,50 +230,87 @@ export default function AIOnboarding({ onComplete, onBack, loading }: AIOnboardi
   };
 
   return (
-    <div className="min-h-screen bg-muted/30 py-12 px-4">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen hero-gradient py-8 md:py-12 px-4 relative overflow-hidden">
+      {/* Decorative blur elements */}
+      <div className="fixed -top-32 -right-32 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
+      <div className="fixed -bottom-32 -left-32 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
+      
+      <div className="max-w-2xl mx-auto relative z-10">
+        {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <Button variant="ghost" onClick={onBack}>
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to selection
+          <Button variant="ghost" onClick={onBack} className="gap-2">
+            <ArrowLeft className="h-4 w-4" /> Back
           </Button>
           
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-3 bg-card/80 backdrop-blur-sm rounded-full px-4 py-2 border border-border/50">
             <Switch
               id="voice-mode"
               checked={voiceMode}
               onCheckedChange={toggleVoiceMode}
             />
-            <Label htmlFor="voice-mode" className="text-sm text-muted-foreground">
+            <Label htmlFor="voice-mode" className="text-sm text-muted-foreground cursor-pointer">
               Voice Mode
             </Label>
           </div>
         </div>
 
-        <Card className="h-[600px] flex flex-col">
+        {/* Title Card */}
+        <div className="mb-6 text-center">
+          <div className="inline-flex items-center gap-3 mb-3">
+            <div className="p-3 rounded-xl bg-primary shadow-lg shadow-primary/25">
+              <MessageSquare className="h-6 w-6 text-primary-foreground" />
+            </div>
+            <h1 className="text-2xl font-bold text-foreground">AI Onboarding</h1>
+          </div>
+          <p className="text-muted-foreground flex items-center justify-center gap-2">
+            <Sparkles className="h-4 w-4 text-accent" />
+            Let's build your profile through conversation
+          </p>
+        </div>
+
+        {/* Chat Card */}
+        <CardGlass className="h-[550px] flex flex-col overflow-hidden">
+          {/* Gradient Header */}
+          <div className="p-4 border-b border-border/50 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Bot className="h-4 w-4 text-primary" />
+              <span>AI Counsellor is typing...</span>
+              <div className="flex-1" />
+              <span className="text-xs bg-primary/10 px-2 py-0.5 rounded-full">
+                Step {currentStep + 1} of {QUESTIONS.length}
+              </span>
+            </div>
+          </div>
+
+          {/* Messages */}
           <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.map((msg, i) => (
               <div
                 key={i}
-                className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}
+                className={cn(
+                  "flex gap-3 animate-fade-in",
+                  msg.role === 'user' ? 'justify-end' : ''
+                )}
               >
                 {msg.role === 'assistant' && (
-                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                    <Bot className="h-4 w-4 text-primary-foreground" />
+                  <div className="w-10 h-10 rounded-xl bg-primary shadow-lg shadow-primary/25 flex items-center justify-center flex-shrink-0">
+                    <Bot className="h-5 w-5 text-primary-foreground" />
                   </div>
                 )}
                 <div
-                  className={`max-w-[80%] rounded-lg p-3 ${
+                  className={cn(
+                    "max-w-[80%] rounded-2xl p-4 shadow-md",
                     msg.role === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted'
-                  }`}
+                      ? 'bg-primary text-primary-foreground shadow-primary/25'
+                      : 'bg-card border border-border/50'
+                  )}
                 >
                   <div className="flex items-start gap-2">
                     <span className="flex-1">{msg.content}</span>
                     {msg.role === 'assistant' && voiceMode && (
                       <button
                         onClick={() => handleReplayTTS(msg.content)}
-                        className="flex-shrink-0 p-1 hover:bg-background/50 rounded transition-colors"
+                        className="flex-shrink-0 p-1.5 hover:bg-muted rounded-lg transition-colors"
                         aria-label={isPlayingTTS ? "Stop audio" : "Play audio"}
                       >
                         {isPlayingTTS ? (
@@ -286,8 +323,8 @@ export default function AIOnboarding({ onComplete, onBack, loading }: AIOnboardi
                   </div>
                 </div>
                 {msg.role === 'user' && (
-                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                    <User className="h-4 w-4" />
+                  <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center flex-shrink-0">
+                    <User className="h-5 w-5 text-muted-foreground" />
                   </div>
                 )}
               </div>
@@ -295,12 +332,12 @@ export default function AIOnboarding({ onComplete, onBack, loading }: AIOnboardi
             
             {/* Show live transcription */}
             {isRecording && partialTranscript && (
-              <div className="flex gap-3 justify-end">
-                <div className="max-w-[80%] rounded-lg p-3 bg-primary/50 text-primary-foreground animate-pulse">
+              <div className="flex gap-3 justify-end animate-fade-in">
+                <div className="max-w-[80%] rounded-2xl p-4 bg-primary/50 text-primary-foreground animate-pulse shadow-md">
                   {partialTranscript}...
                 </div>
-                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                  <User className="h-4 w-4" />
+                <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center flex-shrink-0">
+                  <User className="h-5 w-5 text-muted-foreground" />
                 </div>
               </div>
             )}
@@ -308,17 +345,18 @@ export default function AIOnboarding({ onComplete, onBack, loading }: AIOnboardi
             <div ref={messagesEndRef} />
           </CardContent>
 
-          <div className="p-4 border-t">
+          {/* Input Area */}
+          <div className="p-4 border-t border-border/50 bg-card/50 backdrop-blur-sm">
             {/* Voice mode indicator with waveform */}
             {voiceMode && (isRecording || isPlayingTTS) && (
-              <div className="mb-3 flex items-center justify-center gap-3">
+              <div className="mb-3 flex items-center justify-center gap-3 py-2 px-4 rounded-full bg-muted/50">
                 <AudioWaveform 
                   isActive={isRecording || isPlayingTTS} 
                   variant={isRecording ? 'recording' : 'playing'}
                   className="h-6"
                 />
                 <span className="text-sm text-muted-foreground">
-                  {isRecording ? '🎤 Listening... speak your answer' : '🔊 Speaking...'}
+                  {isRecording ? '🎤 Listening...' : '🔊 Speaking...'}
                 </span>
                 <AudioWaveform 
                   isActive={isRecording || isPlayingTTS} 
@@ -330,13 +368,14 @@ export default function AIOnboarding({ onComplete, onBack, loading }: AIOnboardi
             
             <form 
               onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-              className="flex gap-2"
+              className="flex gap-3"
             >
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={voiceMode ? "Speak or type your answer..." : "Type your answer..."}
                 disabled={loading}
+                className="flex-1 h-12 rounded-xl border-border/50"
               />
               
               {voiceMode && (
@@ -347,26 +386,30 @@ export default function AIOnboarding({ onComplete, onBack, loading }: AIOnboardi
                   onClick={handleMicToggle}
                   disabled={loading || isFetchingToken}
                   className={cn(
-                    "transition-all",
+                    "h-12 w-12 rounded-xl transition-all",
                     isRecording && "animate-pulse"
                   )}
                 >
                   {isFetchingToken ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-5 w-5 animate-spin" />
                   ) : isRecording ? (
-                    <MicOff className="h-4 w-4" />
+                    <MicOff className="h-5 w-5" />
                   ) : (
-                    <Mic className="h-4 w-4" />
+                    <Mic className="h-5 w-5" />
                   )}
                 </Button>
               )}
               
-              <Button type="submit" disabled={!input.trim() || loading}>
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              <Button 
+                type="submit" 
+                disabled={!input.trim() || loading}
+                className="h-12 px-6 rounded-xl shadow-lg shadow-primary/25"
+              >
+                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
               </Button>
             </form>
           </div>
-        </Card>
+        </CardGlass>
       </div>
     </div>
   );
