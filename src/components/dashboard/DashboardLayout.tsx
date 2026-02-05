@@ -81,10 +81,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         )}
       </header>
 
-      <div className="flex">
+      <div className="flex h-[calc(100vh-0px)] lg:h-screen">
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:flex lg:flex-col lg:w-72 lg:border-r lg:border-border lg:bg-sidebar lg:min-h-screen lg:sticky lg:top-0">
-          <div className="p-6 border-b border-sidebar-border">
+        <aside className="hidden lg:flex lg:flex-col lg:w-72 lg:border-r lg:border-border lg:bg-sidebar lg:h-screen lg:sticky lg:top-0">
+          <div className="p-6 border-b border-sidebar-border flex-shrink-0">
             <Link to="/dashboard" className="flex items-center gap-3 group">
               <div className="p-2 rounded-xl bg-sidebar-primary shadow-lg shadow-sidebar-primary/25">
                 <GraduationCap className="h-7 w-7 text-sidebar-primary-foreground" />
@@ -99,7 +99,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </Link>
           </div>
 
-          <nav className="flex-1 p-4 space-y-1.5">
+          <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
             {NAV_ITEMS.map((item) => (
               <Link
                 key={item.path}
@@ -117,7 +117,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             ))}
           </nav>
 
-          <div className="p-4 border-t border-sidebar-border">
+          <div className="p-4 border-t border-sidebar-border flex-shrink-0">
             <div className="flex items-center gap-3 px-4 py-3 mb-2 rounded-xl bg-sidebar-accent/50">
               <div className="w-10 h-10 rounded-full bg-sidebar-primary/20 flex items-center justify-center">
                 <User className="h-5 w-5 text-sidebar-primary" />
@@ -138,7 +138,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-4 md:p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto">
             {children}
           </div>
