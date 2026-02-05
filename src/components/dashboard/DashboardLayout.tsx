@@ -43,21 +43,21 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* Mobile Header */}
-      <header className="lg:hidden border-b border-border bg-card/95 backdrop-blur-sm sticky top-0 z-50">
+      <header className="lg:hidden border-b border-sidebar-border bg-sidebar sticky top-0 z-50">
         <div className="flex items-center justify-between px-4 py-3">
           <Link to="/dashboard" className="flex items-center gap-2 group">
-            <div className="p-1.5 rounded-lg bg-primary shadow-sm">
-              <GraduationCap className="h-5 w-5 text-primary-foreground" />
+            <div className="p-1.5 rounded-lg bg-sidebar-primary shadow-sm">
+              <GraduationCap className="h-5 w-5 text-sidebar-primary-foreground" />
             </div>
-            <span className="font-bold gradient-text">AI Counsellor</span>
+            <span className="font-bold text-sidebar-foreground">AI Counsellor</span>
           </Link>
-          <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+          <Button variant="ghost" size="icon" className="text-sidebar-foreground hover:bg-sidebar-accent" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>
         
         {mobileMenuOpen && (
-          <nav className="border-t border-border p-4 space-y-2 bg-card animate-fade-in">
+          <nav className="border-t border-sidebar-border p-4 space-y-1.5 bg-sidebar animate-fade-in">
             {NAV_ITEMS.map((item) => (
               <Link
                 key={item.path}
@@ -66,15 +66,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 className={cn(
                   'flex items-center gap-3 px-4 py-3 rounded-xl transition-all',
                   location.pathname === item.path
-                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
-                    : 'hover:bg-muted'
+                    ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-sidebar-primary/25'
+                    : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                 )}
               >
                 <item.icon className="h-5 w-5" />
-                {item.label}
+                <span className="font-medium">{item.label}</span>
               </Link>
             ))}
-            <Button variant="ghost" className="w-full justify-start gap-3 px-4 py-3 h-auto" onClick={handleSignOut}>
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start gap-3 px-4 py-3 h-auto text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" 
+              onClick={handleSignOut}
+            >
               <LogOut className="h-5 w-5" /> Sign Out
             </Button>
           </nav>
