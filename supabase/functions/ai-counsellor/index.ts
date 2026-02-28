@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, studentProfile, profile } = await req.json();
+    const { conversationHistory, studentProfile, profile } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
@@ -62,7 +62,7 @@ Remember: You are invested in this student's success. Your advice should feel pe
         model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: message }
+          ...(conversationHistory || [])
         ],
       }),
     });
