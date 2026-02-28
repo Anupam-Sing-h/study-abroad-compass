@@ -12,8 +12,11 @@ import {
   LogOut,
   Menu,
   X,
-  Sparkles
+  Sparkles,
+  Sun,
+  Moon
 } from 'lucide-react';
+import { useEffect } from 'react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -31,9 +34,14 @@ const NAV_ITEMS = [
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
   const { signOut, profile } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', isDark);
+  }, [isDark]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -74,6 +82,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <span className="font-medium">{item.label}</span>
               </Link>
             ))}
+            <div className="flex items-center justify-between px-4 py-3 rounded-xl text-sidebar-foreground/70">
+              <span className="font-medium text-sm">Dark Mode</span>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" onClick={() => setIsDark(!isDark)}>
+                {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+            </div>
             <Button 
               variant="ghost" 
               className="w-full justify-start gap-3 px-4 py-3 h-auto text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" 
@@ -131,13 +145,18 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <p className="text-xs text-sidebar-foreground/60 truncate">{profile?.email}</p>
               </div>
             </div>
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start gap-3 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" 
-              onClick={handleSignOut}
-            >
-              <LogOut className="h-4 w-4" /> Sign Out
-            </Button>
+            <div className="flex items-center justify-between mb-2">
+              <Button 
+                variant="ghost" 
+                className="flex-1 justify-start gap-3 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" 
+                onClick={handleSignOut}
+              >
+                <LogOut className="h-4 w-4" /> Sign Out
+              </Button>
+              <Button variant="ghost" size="icon" className="h-9 w-9 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" onClick={() => setIsDark(!isDark)}>
+                {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+            </div>
           </div>
         </aside>
 
