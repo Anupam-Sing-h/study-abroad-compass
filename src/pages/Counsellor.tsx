@@ -50,9 +50,10 @@ export default function Counsellor() {
     setIsLoading(true);
 
     try {
+      const allMessages = [...messages, { role: 'user', content: userMessage }];
       const response = await supabase.functions.invoke('ai-counsellor', {
         body: { 
-          message: userMessage,
+          conversationHistory: allMessages,
           studentProfile,
           profile
         }
